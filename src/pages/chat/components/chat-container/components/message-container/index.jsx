@@ -1,9 +1,10 @@
 import moment from 'moment';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { MdFolderZip } from 'react-icons/md';
 import { IoMdArrowDown } from 'react-icons/io';
-import { selectChatData, selectChatMessage, selectChatType, updateChatMessage } from '@/store/slices';
+import { selectChatData, selectChatMessage, selectChatType, updateChatMessage, updateFileDownloadProgress, updateIsDownloading } from '@/store/slices';
 import { apiClient } from '@/lib/api-client';
 import { GET_ALL_MESSAGES, HOST } from '@/utils/constants';
 import { IoCloseSharp } from 'react-icons/io5';
@@ -65,6 +66,7 @@ const MessageContainer = () => {
 };
 
 const DMMessage = ({ chatData, message }) => {
+    const imageRef = useRef();
     const [showImage, setShowImage] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
 
@@ -92,13 +94,28 @@ const DMMessage = ({ chatData, message }) => {
         setImageUrl(null);
     };
 
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (imageRef.current && !imageRef.current.contains(event.target)) {
+                setShowImage(false);
+                setImageUrl(null);
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     return (
         <>
             <div className={`${message.sender === chatData._id ? 'text-left' : 'text-right'}`}>
                 <div
                     className={`${
                         message.sender !== chatData._id
-                            ? 'bg-[#8417ff]/5 text-[#8417ff]/90 border-[#8417ff]/50'
+                            ? 'bg-[#357fac]/5 text-[#357fac]/90 border-[#357fac]/50'
                             : 'bg-[#2a2b33]/5 text-white/90 border-[#ffffff]/20'
                     } border inline-block p-4 rounded my-1 max-w-[50%] break-words`}
                 >
@@ -121,7 +138,7 @@ const DMMessage = ({ chatData, message }) => {
                                     </span>
                                     <span>{message.fileUrl.split('/').pop()}</span>
                                     <span
-                                        className="bg-black/20 p-2 text-xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
+                                        className="bg-[#4c7189] p-2 text-xl rounded-full hover:bg-[#4c7189]/50 cursor-pointer transition-all duration-300"
                                         onClick={() => handleDownloadFile(message.fileUrl)}
                                     >
                                         <IoMdArrowDown />
@@ -134,27 +151,46 @@ const DMMessage = ({ chatData, message }) => {
                 </div>
                 <div className="text-xs text-gray-600">{moment(message.timestamp).format('LT')}</div>
             </div>
-            {showImage && imageUrl && (
-                <div className="fixed z-[1000] top-0 left-0 h-[100vh] w-[100vw] flex items-center justify-center flex-col backdrop-blur-lg">
-                    <div className="">
-                        <img className="h-[80vh] w-full bg-cover" src={`${HOST}/${imageUrl}`} />
-                    </div>
-                    <div className="flex gap-5 fixed top-5 right-10">
-                        <span
-                            className="bg-black/20 p-2 text-xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
-                            onClick={() => handleDownloadFile(imageUrl)}
+            <AnimatePresence>
+                {showImage && imageUrl && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="fixed z-[1000] top-0 left-0 h-[100vh] w-[100vw] flex items-center justify-center flex-col bg-black/80 backdrop-blur-lg"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.9 }}
+                            transition={{ duration: 0.3 }}
                         >
-                            <IoMdArrowDown />
-                        </span>
-                        <span
-                            className="bg-black/20 p-2 text-xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
-                            onClick={handleCloseShowImage}
-                        >
-                            <IoCloseSharp />
-                        </span>
-                    </div>
-                </div>
-            )}
+                            <img ref={imageRef} className="h-[80vh] w-full bg-cover" src={`${HOST}/${imageUrl}`} />
+                        </motion.div>
+
+                        <div className="flex gap-5 fixed top-5 right-10">
+                            <motion.span
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="bg-[#4c7189] p-2 text-xl rounded-full hover:bg-[#4c7189]/50 cursor-pointer transition-all duration-300"
+                                onClick={() => handleDownloadFile(imageUrl)}
+                            >
+                                <IoMdArrowDown />
+                            </motion.span>
+
+                            <motion.span
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className="bg-[#4c7189] p-2 text-xl rounded-full hover:bg-[#4c7189]/50 cursor-pointer transition-all duration-300"
+                                onClick={handleCloseShowImage}
+                            >
+                                <IoCloseSharp />
+                            </motion.span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 };

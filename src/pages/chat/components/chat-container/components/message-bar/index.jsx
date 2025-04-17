@@ -1,15 +1,16 @@
 import { useSocket } from '@/context/SocketContext';
 import { apiClient } from '@/lib/api-client';
-import { selectChatData, selectChatType, selectUserData } from '@/store/slices';
+import { selectChatData, selectChatType, selectUserData, updateFileUploadProgress, updateIsUploading } from '@/store/slices';
 import { UPLOAD_FILE } from '@/utils/constants';
 import EmojiPicker from 'emoji-picker-react';
 import { useState, useRef, useEffect } from 'react';
 import { GrAttachment } from 'react-icons/gr';
 import { IoSend } from 'react-icons/io5';
 import { RiEmojiStickerLine } from 'react-icons/ri';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const MessageBar = () => {
+    const dispatch = useDispatch();
     const user = useSelector(selectUserData);
     const chatType = useSelector(selectChatType);
     const chatData = useSelector(selectChatData);
@@ -49,16 +50,21 @@ const MessageBar = () => {
     const handleAttachmentChange = async (event) => {
         try {
             const file = event.target.files[0];
-            
+
             if (file) {
                 const formData = new FormData();
                 formData.append('file', file);
+                dispatch(updateIsUploading(true));
 
                 const res = await apiClient.post(UPLOAD_FILE, formData, {
                     withCredentials: true,
+                    onUploadProgress: (data) => {
+                        dispatch(updateFileUploadProgress(Math.round((data.loaded * 100) / data.total)));
+                    },
                 });
 
                 if (res.status === 200 && res.data) {
+                    dispatch(updateIsUploading(false));
                     if (chatType === 'contact') {
                         const messageData = {
                             sender: user.id,
@@ -72,6 +78,7 @@ const MessageBar = () => {
                 }
             }
         } catch (error) {
+            dispatch(updateIsUploading(false));
             console.error('Upload file error: ' + error);
         }
     };
@@ -119,7 +126,7 @@ const MessageBar = () => {
                 </div>
             </div>
             <button
-                className="bg-[#8417ff] rounded-md flex items-center justify-center p-5 hover:bg-[#741bda] focus:bg-[#741bda] focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+                className="bg-[#357fac] rounded-md flex items-center justify-center p-5 hover:bg-[#125b81] focus:bg-[#125b81] focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
                 onClick={handleSendMessage}
             >
                 <IoSend className="text-2xl" />

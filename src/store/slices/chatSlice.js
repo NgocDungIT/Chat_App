@@ -77,7 +77,7 @@ export const selectChatData = (state) => state.chat.chatData;
 export const selectChatMessage = (state) => state.chat.chatMessage;
 export const selectDirectMessagesContacts = (state) => state.chat.directMessagesContacts;
 export const selectIsUploading = (state) => state.chat.isUploading;
-export const isDownloading = (state) => state.chat.isDownloading;
+export const selectIsDownloading = (state) => state.chat.isDownloading;
 export const selectFileDownloadProgress = (state) => state.chat.fileDownloadProgress;
 export const selectFileUploadProgress = (state) => state.chat.fileUploadProgress;
 
