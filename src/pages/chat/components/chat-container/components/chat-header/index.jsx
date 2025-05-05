@@ -26,18 +26,31 @@ const ChatHeader = () => {
                                     className="object-cover w-full h-full bg-transparent"
                                 />
                             ) : (
-                                <div
-                                    className={`uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full 
+                                <>
+                                    {chatType === 'contact' ? (
+                                        <div
+                                            className={`uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full 
                                                             ${getColor(chatData.color)}`}
-                                >
-                                    {chatData?.firstName
-                                        ? chatData.firstName.split('').shift()
-                                        : chatData.email.split('').shift()}
-                                </div>
+                                        >
+                                            {chatData?.firstName
+                                                ? chatData.firstName.split('').shift()
+                                                : chatData.email.split('').shift()}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-[#ffffff22] h-12 w-12 flex rounded-full items-center justify-center">
+                                            #
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </Avatar>
                     </div>
-                    <div>
+                    <div className="ml-2">
+                        {chatType === 'channel' && (
+                            <div className="flex flex-col ml-1">
+                                <span>{chatData.name}</span>
+                            </div>
+                        )}
                         {chatType === 'contact' && (
                             <div className="flex flex-col ml-1">
                                 <span>

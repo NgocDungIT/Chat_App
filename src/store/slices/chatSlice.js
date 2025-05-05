@@ -9,6 +9,7 @@ const initialState = {
     isUploading: false,
     fileDownloadProgress: 0,
     fileUploadProgress: 0,
+    channels: [],
 };
 
 export const chatSlice = createSlice({
@@ -56,6 +57,13 @@ export const chatSlice = createSlice({
             state.chatData = null;
             state.chatMessage = [];
         },
+        updateChannel(state, action) {
+            state.channels = action.payload;
+        },
+        addChannel(state, action) {
+            const channels = state.channels;
+            state.channels = [...channels, action.payload];
+        },
     },
 });
 
@@ -70,6 +78,8 @@ export const {
     updateFileUploadProgress,
     addChat,
     closeChat,
+    updateChannel,
+    addChannel,
 } = chatSlice.actions;
 
 export const selectChatType = (state) => state.chat.chatType;
@@ -80,5 +90,6 @@ export const selectIsUploading = (state) => state.chat.isUploading;
 export const selectIsDownloading = (state) => state.chat.isDownloading;
 export const selectFileDownloadProgress = (state) => state.chat.fileDownloadProgress;
 export const selectFileUploadProgress = (state) => state.chat.fileUploadProgress;
+export const selectChannels = (state) => state.chat.channels;
 
 export default chatSlice.reducer;

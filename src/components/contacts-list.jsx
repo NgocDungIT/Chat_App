@@ -1,22 +1,11 @@
 import { useDispatch, useSelector } from 'react-redux';
-import {
-    selectChatData,
-    selectChatMessage,
-    selectChatType,
-    selectDirectMessagesContacts,
-    updateChatData,
-    updateChatMessage,
-    updateChatType,
-} from '@/store/slices';
+import { selectChatData, updateChatData, updateChatMessage, updateChatType } from '@/store/slices';
 import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
 import { getColor } from '@/lib/utils';
 
-const ContactsList = ({ isChannel = false }) => {
+const ContactsList = ({ isChannel = false, contacts }) => {
     const dispatch = useDispatch();
-    const contacts = useSelector(selectDirectMessagesContacts);
-    const chatType = useSelector(selectChatType);
     const chatData = useSelector(selectChatData);
-    const chatMessage = useSelector(selectChatMessage);
 
     const handleClick = (contact) => {
         if (isChannel) dispatch(updateChatType('channel'));

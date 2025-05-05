@@ -2,13 +2,16 @@ import { useEffect } from 'react';
 import NewDM from './components/new-dm';
 import ProfileInfo from './components/profile-info';
 import { apiClient } from '@/lib/api-client';
-import { GET_DM_CONTACTS } from '@/utils/constants';
-import { useDispatch } from 'react-redux';
-import { updateDirectMessagesContacts } from '@/store/slices';
+import { GET_DM_CONTACTS, GET_USER_CHANNELS } from '@/utils/constants';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectChannels, selectDirectMessagesContacts, updateChannel, updateDirectMessagesContacts } from '@/store/slices';
 import ContactsList from '@/components/contacts-list';
+import CreateChannel from '../create-channel';
 
 const ContactsContainer = () => {
     const dispatch = useDispatch();
+    const directMessagesContacts = useSelector(selectDirectMessagesContacts);
+    const channels = useSelector(selectChannels);
 
     useEffect(() => {
         const getContacts = async () => {
@@ -20,6 +23,18 @@ const ContactsContainer = () => {
                 dispatch(updateDirectMessagesContacts(res.data.data));
             }
         };
+
+        const getChannels = async () => {
+            const res = await apiClient.get(GET_USER_CHANNELS, {
+                withCredentials: true,
+            });
+
+            if (res.data.channels) {
+                dispatch(updateChannel(res.data.channels));
+            }
+        };
+
+        getChannels();
         getContacts();
     }, [dispatch]);
 
@@ -33,13 +48,17 @@ const ContactsContainer = () => {
                     <Title text="Direct Messages" />
                     <NewDM />
                 </div>
-                <div className='max-h-[38vh] overflow-y-auto scrollbar-hidden'>
-                    <ContactsList />
+                <div className="max-h-[38vh] overflow-y-auto scrollbar-hidden">
+                    <ContactsList contacts={directMessagesContacts} />
                 </div>
             </div>
             <div className="my-5">
                 <div className="flex items-center justify-between pr-10">
                     <Title text={'Channels'} />
+                    <CreateChannel />
+                </div>
+                <div className="max-h-[38vh] overflow-y-auto scrollbar-hidden">
+                    <ContactsList isChannel={true} contacts={channels} />
                 </div>
             </div>
             <ProfileInfo />

@@ -38,12 +38,14 @@ const SocketProvider = ({ children }) => {
                     chatType !== undefined &&
                     (chatData?._id === message?.sender._id || chatData?._id === message?.recipient._id)
                 ) {
-                    console.log("🚀 ~ handleRecieveMessage ~ message:", message)
                     dispatch(addChat(message));
                 }
             };
 
+            const handleRecieveChannelMessage = (message) => {};
+
             newSocket.on('recieveMessage', handleRecieveMessage);
+            newSocket.on('recieveChannelMessage', handleRecieveChannelMessage);
 
             return () => {
                 console.log('🔌 Disconnecting socket...');
