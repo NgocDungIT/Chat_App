@@ -3,9 +3,10 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
-import { LOGIN_ROUTE } from '@/utils/constants';
+import { LOGIN_ROUTE, LOGIN_GOOGLE_ROUTE } from '@/utils/constants';
 import { useDispatch } from 'react-redux';
 import { updateUserData } from '@/store/slices/authSlice';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -30,8 +31,8 @@ const Login = () => {
     const handleLogin = async () => {
         if (validateValue()) {
             const res = await apiClient.post(LOGIN_ROUTE, { email, password }, { withCredentials: true });
-            if (res?.status == 201 && res?.data.data) {
-                const infoUser = res?.data.data
+            if (res?.status == 200 && res?.data?.data) {
+                const infoUser = res?.data.data;
                 dispatch(updateUserData(infoUser));
                 toast('Login sucessfully.');
                 if (res?.data.profileSetup) {
@@ -39,9 +40,39 @@ const Login = () => {
                 } else {
                     navigate('/profile');
                 }
+            } else {
+                toast(res?.data?.message);
             }
         }
     };
+
+    const handleLoginGoogle = useGoogleLogin({
+        onSuccess: (credential) => {
+            try {
+                console.log(credential);
+                const googleLogin = async () => {
+                    const res = await apiClient.post(LOGIN_GOOGLE_ROUTE, { credential }, { withCredentials: true });
+                    if (res?.status == 200 && res?.data?.data) {
+                        const infoUser = res?.data.data;
+                        dispatch(updateUserData(infoUser));
+                        toast('Login sucessfully.');
+                        if (res?.data.profileSetup) {
+                            navigate('/chat');
+                        } else {
+                            navigate('/profile');
+                        }
+                    } else {
+                        toast(res?.data?.message);
+                    }
+                };
+
+                googleLogin();
+            } catch (error) {
+                toast(error?.message);
+            }
+        },
+        onError: (errorResponse) => toast(errorResponse),
+    });
 
     return (
         <div className="flex items-center justify-center h-screen w-full px-5 sm:px-0">
@@ -85,9 +116,9 @@ const Login = () => {
                             Login
                         </button>
                     </div>
-                    <a
-                        href="#"
-                        className=" flex items-center justify-center mt-4 text-white rounded-lg shadow-md hover:bg-gray-100"
+                    <button
+                        onClick={() => handleLoginGoogle()}
+                        className="flex items-center  w-full justify-center mt-4 text-white rounded-lg shadow-md hover:bg-gray-100"
                     >
                         <div className="flex px-5 justify-center w-full py-3">
                             <div className="min-w-[30px]">
@@ -114,7 +145,7 @@ const Login = () => {
                                 <h1 className="whitespace-nowrap text-gray-600 font-bold">Sign in with Google</h1>
                             </div>
                         </div>
-                    </a>
+                    </button>
                     <div className="mt-4 flex items-center w-full text-center">
                         <a href="#" className="text-xs text-gray-500 capitalize text-center w-full">
                             Don&apos;t have any account yet?

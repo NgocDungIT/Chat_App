@@ -11,9 +11,11 @@ import { toast } from 'sonner';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useDispatch } from 'react-redux';
 import { addChannel } from '@/store/slices';
+import { useSocket } from '@/context/SocketContext';
 
 const CreateChannel = () => {
     const dispatch = useDispatch();
+    const socket = useSocket();
     const [isFeatching, setIsFeatching] = useState(false);
     const [openChannelModal, setOpenChannelModal] = useState(false);
     const [allContacts, setAllContacts] = useState([]);
@@ -44,7 +46,12 @@ const CreateChannel = () => {
             );
 
             if (res.status === 201) {
+                socket.emit('createChannel', {
+                    channel: res.data.channel,
+                });
+
                 dispatch(addChannel(res.data.channel));
+
                 setChannelName('');
                 setSelectedContacts([]);
                 setIsFeatching(false);
@@ -56,6 +63,20 @@ const CreateChannel = () => {
             console.log('Error: ', err);
         }
     };
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleChannelRenamed = (data) => {
+            dispatch(addChannel(data));
+        };
+
+        socket.on('channelCreated', handleChannelRenamed);
+
+        return () => {
+            socket.off('channelCreated', handleChannelRenamed);
+        };
+    }, [socket, dispatch]);
 
     useEffect(() => {
         const getData = async () => {
@@ -124,7 +145,7 @@ const CreateChannel = () => {
                             onClick={() => setOpenChannelModal(true)}
                         />
                     </TooltipTrigger>
-                    <TooltipContent className="bg-[#1c1b1e] border-none mb-2 p-3 text-white">
+                    <TooltipContent className="bg-[#585858] border-none mb-2 p-3 text-white">
                         <p>Create new channel</p>
                     </TooltipContent>
                 </Tooltip>

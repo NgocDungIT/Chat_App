@@ -25,6 +25,14 @@ export const chatSlice = createSlice({
         updateChatMessage(state, action) {
             state.chatMessage = action.payload;
         },
+        addDirectMessagesContacts(state, action) {
+            if (action.payload?._id) {
+                const index = state.directMessagesContacts.findIndex((item) => item._id === action.payload?._id);
+                if (index === -1) {
+                    state.directMessagesContacts.unshift(action.payload);
+                }
+            }
+        },
         updateDirectMessagesContacts(state, action) {
             state.directMessagesContacts = action.payload;
         },
@@ -61,8 +69,29 @@ export const chatSlice = createSlice({
             state.channels = action.payload;
         },
         addChannel(state, action) {
-            const channels = state.channels;
-            state.channels = [...channels, action.payload];
+            if (action?.payload) {
+                const index = state.channels.findIndex((item) => item._id === action?.payload._id);
+                if (index === -1) {
+                    state.channels.unshift(action.payload);
+                } else {
+                    state.channels[index] = action.payload;
+                }
+            }
+        },
+        updateChannelName(state, action) {
+            const { channelId, newTitle } = action.payload;
+            const index = state.channels.findIndex((item) => item._id === channelId);
+            if (index !== -1) {
+                state.channels[index].name = newTitle;
+                state.chatData.name = newTitle;
+            }
+        },
+        leaveChannel(state, action) {
+            const { channelId } = action.payload;
+            const index = state.channels.findIndex((item) => item._id === channelId);
+            if (index !== -1) {
+                state.channels.splice(index, 1);
+            }
         },
     },
 });
@@ -71,6 +100,7 @@ export const {
     updateChatData,
     updateChatType,
     updateChatMessage,
+    addDirectMessagesContacts,
     updateDirectMessagesContacts,
     updateIsUploading,
     updateIsDownloading,
@@ -80,6 +110,8 @@ export const {
     closeChat,
     updateChannel,
     addChannel,
+    updateChannelName,
+    leaveChannel,
 } = chatSlice.actions;
 
 export const selectChatType = (state) => state.chat.chatType;

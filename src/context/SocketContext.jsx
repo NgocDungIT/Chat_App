@@ -18,7 +18,7 @@ const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        if (user) {
+        if (Object.keys(user).length) {
             console.log('🔄 Initializing socket...');
             const newSocket = io(HOST, {
                 withCredentials: true,
@@ -42,7 +42,14 @@ const SocketProvider = ({ children }) => {
                 }
             };
 
-            const handleRecieveChannelMessage = (message) => {};
+            const handleRecieveChannelMessage = (message) => {
+                const chatData = store.getState().chat.chatData;
+                const chatType = store.getState().chat.chatType;
+
+                if (chatType !== undefined && chatData._id === message.channelId) {
+                    dispatch(addChat(message));
+                }
+            };
 
             newSocket.on('recieveMessage', handleRecieveMessage);
             newSocket.on('recieveChannelMessage', handleRecieveChannelMessage);

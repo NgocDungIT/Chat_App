@@ -29,27 +29,28 @@ const MessageBar = () => {
     };
 
     const handleSendMessage = async () => {
-        if (chatType === 'contact') {
-            const messageData = {
-                sender: user.id,
-                recipient: chatData._id,
-                messageType: 'text',
-                content: message,
-                fileUrl: undefined,
-            };
-            socket.emit('sendMessage', messageData);
-        } else if (chatType === 'channel') {
-            const messageData = {
-                sender: user.id,
-                channelId: chatData._id,
-                messageType: 'text',
-                content: message,
-                fileUrl: undefined,
-            };
-            socket.emit('sendChannelMessage', messageData);
+        if (message) {
+            if (chatType === 'contact') {
+                const messageData = {
+                    sender: user.id,
+                    recipient: chatData._id,
+                    messageType: 'text',
+                    content: message,
+                    fileUrl: undefined,
+                };
+                socket.emit('sendMessage', { message: messageData, contact: chatData });
+            } else if (chatType === 'channel') {
+                const messageData = {
+                    sender: user.id,
+                    channelId: chatData._id,
+                    messageType: 'text',
+                    content: message,
+                    fileUrl: undefined,
+                };
+                socket.emit('sendChannelMessage', messageData);
+            }
+            setMessage('');
         }
-
-        setMessage('');
     };
 
     const handleAttachmentClick = () => {
@@ -84,7 +85,7 @@ const MessageBar = () => {
                             content: null,
                             fileUrl: res.data.data.filePath,
                         };
-                        socket.emit('sendMessage', messageData);
+                        socket.emit('sendMessage', { message: messageData, contact: chatData });
                     } else if (chatType === 'channel') {
                         const messageData = {
                             sender: user.id,

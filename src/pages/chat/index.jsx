@@ -1,5 +1,6 @@
 import {
     selectChatType,
+    selectDataChatBotSelected,
     selectFileDownloadProgress,
     selectFileUploadProgress,
     selectIsDownloading,
@@ -13,6 +14,7 @@ import { toast } from 'sonner';
 import ChatContainer from './components/chat-container';
 import ContactsContainer from './components/contacts-container';
 import EmptyChatContainer from './components/empty-chat-container';
+import ChatBotContainer from './components/chat-bot-container';
 
 const Chat = () => {
     const navigate = useNavigate();
@@ -22,6 +24,7 @@ const Chat = () => {
     const isUploading = useSelector(selectIsUploading);
     const fileDownloadProgress = useSelector(selectFileDownloadProgress);
     const fileUploadProgress = useSelector(selectFileUploadProgress);
+    const dataChatBotSelected = useSelector(selectDataChatBotSelected);
 
     useEffect(() => {
         if (!user.profileSetup) {
@@ -45,7 +48,11 @@ const Chat = () => {
                 </div>
             )}
             <ContactsContainer />
-            {chatType == null ? <EmptyChatContainer /> : <ChatContainer />}
+            {
+                dataChatBotSelected ? 
+                <ChatBotContainer />
+                : chatType == null ? <EmptyChatContainer /> : <ChatContainer />
+            }
         </div>
     );
 };

@@ -10,7 +10,7 @@ import Lottie from 'react-lottie';
 import { useDispatch } from 'react-redux';
 import { animationDefaultOptions, getColor } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
-import { updateChatData, updateChatType } from '@/store/slices';
+import { addDirectMessagesContacts, updateChatData, updateChatType } from '@/store/slices';
 import { SEARCH_CONTACTS } from '@/utils/constants';
 
 const NewDM = () => {
@@ -42,6 +42,7 @@ const NewDM = () => {
     const handleSelectContact = (contact) => {
         setOpenContactModal(false);
         dispatch(updateChatType('contact'));
+        dispatch(addDirectMessagesContacts(contact));
         dispatch(updateChatData(contact));
     };
 
@@ -137,7 +138,7 @@ const NewDM = () => {
                             onClick={() => setOpenContactModal(true)}
                         />
                     </TooltipTrigger>
-                    <TooltipContent className="bg-[#1c1b1e] border-none mb-2 p-3 text-white">
+                    <TooltipContent className="bg-[#585858] border-none mb-2 p-3 text-white">
                         <p>Select New Contact</p>
                     </TooltipContent>
                 </Tooltip>

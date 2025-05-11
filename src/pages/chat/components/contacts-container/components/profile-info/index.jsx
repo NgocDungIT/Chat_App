@@ -54,9 +54,9 @@ const ProfileInfo = () => {
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger>
-                            <FiEdit2 className="text-purple-500 text-xl font-medium" onClick={() => navigate('/profile')} />
+                            <FiEdit2 className="text-[#357fac] text-xl font-medium" onClick={() => navigate('/profile')} />
                         </TooltipTrigger>
-                        <TooltipContent className="bg-[#1c1b1e] border-none text-white">
+                        <TooltipContent className="bg-[#585858] border-none text-white">
                             <p>Edit Profile</p>
                         </TooltipContent>
                     </Tooltip>
@@ -67,7 +67,7 @@ const ProfileInfo = () => {
                         <TooltipTrigger>
                             <IoPowerSharp className="text-red-500 text-xl font-medium" onClick={handleLogout} />
                         </TooltipTrigger>
-                        <TooltipContent className="bg-[#1c1b1e] border-none text-white">
+                        <TooltipContent className="bg-[#585858] border-none text-white">
                             <p>Logout</p>
                         </TooltipContent>
                     </Tooltip>
