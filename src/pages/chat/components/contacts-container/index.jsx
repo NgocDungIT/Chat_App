@@ -8,6 +8,7 @@ import {
     addDirectMessagesContacts,
     selectChannels,
     selectDirectMessagesContacts,
+    selectUserData,
     updateChannel,
     updateDirectMessagesContacts,
 } from '@/store/slices';
@@ -22,6 +23,7 @@ const ContactsContainer = () => {
     const socket = useSocket();
     const directMessagesContacts = useSelector(selectDirectMessagesContacts);
     const channels = useSelector(selectChannels);
+    const user = useSelector(selectUserData);
 
     useEffect(() => {
         const getContacts = async () => {
@@ -51,16 +53,19 @@ const ContactsContainer = () => {
     useEffect(() => {
         if (!socket) return;
 
-        const handleChannelRenamed = (contact) => {
-            dispatch(dispatch(addDirectMessagesContacts(contact)));
+        const handleAddDirectContact = (contact) => {
+            dispatch(addDirectMessagesContacts({
+                ...contact,
+                idUser: user.id,
+            }));
         };
 
-        socket.on('addDirectContact', handleChannelRenamed);
+        socket.on('addDirectContact', handleAddDirectContact);
 
         return () => {
-            socket.off('addDirectContact', handleChannelRenamed);
+            socket.off('addDirectContact', handleAddDirectContact);
         };
-    }, [socket, dispatch]);
+    }, [socket, dispatch, user.id]);
 
     return (
         <div className="realtive max-h-[100vh] md:w-[35vw] lg:w-[30vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] flex flex-col">

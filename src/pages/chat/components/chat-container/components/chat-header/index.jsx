@@ -14,24 +14,37 @@ import {
     selectChatData,
     selectChatType,
     selectUserData,
+    updateChannelImage,
     updateChannelName,
     updateChatData,
 } from '@/store/slices';
-import { ADD_MEMBERS_CHANNEL, GET_ALL_CONTACTS, LEAVE_CHANNEL } from '@/utils/constants';
+import {
+    ADD_MEMBERS_CHANNEL,
+    DELETE_IMAGE_CHANNEL,
+    GET_ALL_CONTACTS,
+    LEAVE_CHANNEL,
+    UPLOAD_IMAGE_CHANNEL,
+} from '@/utils/constants';
 import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
-import { useEffect, useState } from 'react';
-import { FiEdit2 } from 'react-icons/fi';
+import { useEffect, useRef, useState } from 'react';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { FaTrash } from 'react-icons/fa';
+import { FiEdit2, FiUpload } from 'react-icons/fi';
 import { RiCloseFill, RiInformation2Fill } from 'react-icons/ri';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
+import VideoCall from '../video-call';
 
 const ChatHeader = () => {
     const dispatch = useDispatch();
     const socket = useSocket();
     const chatData = useSelector(selectChatData);
-    const chatType = useSelector(selectChatType);
     const user = useSelector(selectUserData);
+    const chatType = useSelector(selectChatType);
 
+    const fileInputRef = useRef();
+    const [hovered, setHovered] = useState(false);
+    const [loadingImage, setLoadingImage] = useState(false);
     const [allContacts, setAllContacts] = useState([]);
     const [selectedContacts, setSelectedContacts] = useState([]);
 
@@ -141,6 +154,79 @@ const ChatHeader = () => {
         }
     };
 
+    const handleOpenFileInput = () => {
+        fileInputRef.current.click();
+    };
+
+    const handleDeleteImage = async () => {
+        const idImage = chatData?.image.split('/').pop().split('.')[0];
+        if (idImage) {
+            setLoadingImage(true);
+            await apiClient
+                .post(DELETE_IMAGE_CHANNEL, { idImage: idImage, channelId: chatData._id }, { withCredentials: true })
+                .then((response) => {
+                    socket.emit('changeImageChannel', {
+                        channelId: chatData._id,
+                        url: response.data?.url || null,
+                    });
+
+                    dispatch(
+                        updateChannelImage({
+                            channelId: chatData._id,
+                            url: response.data?.url || null,
+                        })
+                    );
+
+                    toast('Delete avatar channel successfully');
+                })
+                .catch(() => {
+                    toast('Failed to delete avatar. Please try again');
+                })
+                .finally(() => {
+                    setLoadingImage(false);
+                });
+        }
+    };
+
+    const handleChangeImage = async (event) => {
+        const formData = new FormData();
+        const file = event.target.files[0];
+        const channelId = chatData._id;
+        if (file) {
+            setLoadingImage(true);
+            formData.append('image', file);
+            formData.append('channelId', channelId);
+
+            await apiClient
+                .post(UPLOAD_IMAGE_CHANNEL, formData, {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                })
+                .then((response) => {
+                    socket.emit('changeImageChannel', {
+                        channelId: chatData._id,
+                        url: response.data?.url || null,
+                    });
+
+                    dispatch(
+                        updateChannelImage({
+                            channelId: chatData._id,
+                            url: response.data?.url || null,
+                        })
+                    );
+                    toast('Upload avatar channel successfully');
+                })
+                .catch(() => {
+                    toast('Failed to load avatar channel. Please try again');
+                })
+                .finally(() => {
+                    setLoadingImage(false);
+                });
+        }
+    };
+
     useEffect(() => {
         if (!socket) return;
 
@@ -164,12 +250,18 @@ const ChatHeader = () => {
             }
         };
 
+        const handleChannelChangedImage = (data) => {
+            dispatch(updateChannelImage(data));
+        };
+
         socket.on('channelRenamed', handleChannelRenamed);
         socket.on('channelDeleted', handleChannelDeleted);
+        socket.on('channelChangedImage', handleChannelChangedImage);
 
         return () => {
             socket.off('channelRenamed', handleChannelRenamed);
             socket.off('channelDeleted', handleChannelDeleted);
+            socket.off('channelChangedImage', handleChannelChangedImage);
         };
     }, [socket, dispatch]);
 
@@ -237,16 +329,17 @@ const ChatHeader = () => {
                         </div>
                     </div>
                     <div className="flex items-center justify-center gap-5">
+                        {/* {chatType === 'contact' && <VideoCall />} */}
                         <button
                             onClick={handleCloseChat}
-                            className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+                            className="text-neutral-500 focus:border-none focus:outline-none hover:text-white focus:text-white duration-300 transition-all"
                         >
                             <RiCloseFill className="text-3xl" />
                         </button>
 
                         {chatType === 'channel' && (
                             <button
-                                className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+                                className="text-neutral-500 focus:border-none focus:outline-none hover:text-white focus:text-white duration-300 transition-all"
                                 onClick={() => setOpenSheet(true)}
                             >
                                 <RiInformation2Fill className="text-3xl" />
@@ -256,8 +349,54 @@ const ChatHeader = () => {
                             <Sheet open={openSheet} onOpenChange={setOpenSheet}>
                                 <SheetContent className="bg-[#1c1d25] border-[#2f303b]">
                                     <div className="w-full flex flex-col justify-center items-center">
-                                        <div className="bg-[#ffffff22] h-[100px] w-[100px] flex rounded-full items-center justify-center">
-                                            #
+                                        <div
+                                            className="bg-[#ffffff22] h-[100px] w-[100px] relative flex rounded-full items-center justify-center"
+                                            onMouseEnter={() => setHovered(true)}
+                                            onMouseLeave={() => setHovered(false)}
+                                        >
+                                            {chatData.image ? (
+                                                <Avatar className="h-full w-full rounded-full overflow-hidden">
+                                                    <AvatarImage
+                                                        src={chatData.image}
+                                                        alt="avatar"
+                                                        className="object-cover w-full h-full bg-transparent"
+                                                    />
+                                                </Avatar>
+                                            ) : (
+                                                <span className="font-bold text-xl text-white">#</span>
+                                            )}
+
+                                            {user.id === chatData.admin._id && (
+                                                <>
+                                                    {hovered && !loadingImage && (
+                                                        <div
+                                                            onClick={() =>
+                                                                chatData.image ? handleDeleteImage() : handleOpenFileInput()
+                                                            }
+                                                            className="h-[100px] w-[100px] absolute inset-0 flex items-center justify-center bg-black/50 ring-fuchsia-50 rounded-full"
+                                                        >
+                                                            {chatData?.image ? (
+                                                                <FaTrash className="text-white text-3xl cursor-pointer" />
+                                                            ) : (
+                                                                <FiUpload className="text-white text-3xl cursor-pointer" />
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {loadingImage && (
+                                                        <div className="h-[100px] w-[100px] absolute inset-0 flex items-center justify-center bg-black/50 ring-fuchsia-50 rounded-full">
+                                                            <AiOutlineLoading3Quarters className="text-white text-3xl cursor-pointer animate-spin" />
+                                                        </div>
+                                                    )}
+                                                    <input
+                                                        name="image"
+                                                        ref={fileInputRef}
+                                                        className="hidden"
+                                                        type="file"
+                                                        onChange={handleChangeImage}
+                                                    />
+                                                </>
+                                            )}
                                         </div>
                                         <div className="flex items-center justify-center gap-2 pb-4">
                                             <p className="text-white font-medium text-2xl mt-2">{chatData.name}</p>

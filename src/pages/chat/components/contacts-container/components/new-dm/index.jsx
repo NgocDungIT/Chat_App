@@ -7,15 +7,16 @@ import { FaPlus } from 'react-icons/fa';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useState } from 'react';
 import Lottie from 'react-lottie';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { animationDefaultOptions, getColor } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
-import { addDirectMessagesContacts, updateChatData, updateChatType } from '@/store/slices';
+import { addDirectMessagesContacts, selectUserData, updateChatData, updateChatType } from '@/store/slices';
 import { SEARCH_CONTACTS } from '@/utils/constants';
 
 const NewDM = () => {
     const dispatch = useDispatch();
 
+    const user = useSelector(selectUserData);
     const [isFeatching, setIsFeatching] = useState(false);
     const [openContactModal, setOpenContactModal] = useState(false);
     const [textSearchContacts, setTextSearchContacts] = useState('');
@@ -42,7 +43,12 @@ const NewDM = () => {
     const handleSelectContact = (contact) => {
         setOpenContactModal(false);
         dispatch(updateChatType('contact'));
-        dispatch(addDirectMessagesContacts(contact));
+        dispatch(
+            addDirectMessagesContacts({
+                ...contact,
+                idUser: user.id,
+            })
+        );
         dispatch(updateChatData(contact));
     };
 

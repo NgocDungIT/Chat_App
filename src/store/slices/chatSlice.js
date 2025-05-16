@@ -26,9 +26,9 @@ export const chatSlice = createSlice({
             state.chatMessage = action.payload;
         },
         addDirectMessagesContacts(state, action) {
-            if (action.payload?._id) {
+            if (action.payload?._id && action.payload?.idUser) {
                 const index = state.directMessagesContacts.findIndex((item) => item._id === action.payload?._id);
-                if (index === -1) {
+                if (index === -1 && action.payload?._id !== action.payload?.idUser) {
                     state.directMessagesContacts.unshift(action.payload);
                 }
             }
@@ -93,6 +93,14 @@ export const chatSlice = createSlice({
                 state.channels.splice(index, 1);
             }
         },
+        updateChannelImage(state, action) {
+            const { channelId, url } = action.payload;
+            const index = state.channels.findIndex((item) => item._id === channelId);
+            if (index !== -1) {
+                state.channels[index].image = url;
+                state.chatData.image = url;
+            }
+        },
     },
 });
 
@@ -112,6 +120,7 @@ export const {
     addChannel,
     updateChannelName,
     leaveChannel,
+    updateChannelImage,
 } = chatSlice.actions;
 
 export const selectChatType = (state) => state.chat.chatType;

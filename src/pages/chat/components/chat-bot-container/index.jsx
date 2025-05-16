@@ -1,4 +1,5 @@
 import { chatWithGPT, generateImageWithDALLE } from '@/lib/chatgpt';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     closeChat,
     selectDataChatBotSelected,
@@ -7,13 +8,16 @@ import {
     updateTitleSession,
 } from '@/store/slices';
 import { Avatar } from '@radix-ui/react-avatar';
-import { useState } from 'react';
-import { IoSend } from 'react-icons/io5';
+import { useEffect, useRef, useState } from 'react';
+import { IoCloseSharp, IoSend } from 'react-icons/io5';
 import { RiCloseFill } from 'react-icons/ri';
 import { useDispatch, useSelector } from 'react-redux';
 import { store } from '@/store';
 import { apiClient } from '@/lib/api-client';
-import { ADD_MESSAGE_SESSION } from '@/utils/constants';
+import { ADD_MESSAGE_SESSION, HOST } from '@/utils/constants';
+import { IoMdArrowDown } from 'react-icons/io';
+import Lottie from 'react-lottie';
+import dotsLoadingAnimation from '@/assets/animation-loading.json';
 
 const ChatBotContainer = () => {
     const dispatch = useDispatch();
@@ -92,7 +96,7 @@ const ChatBotContainer = () => {
         if (!message.trim()) return;
 
         try {
-            const userMessage = { role: 'user', content: message };
+            const userMessage = { role: 'user', content: message, messageType: 'text' };
 
             if (!dataChatBotSelected.isUpdateTitle) {
                 dispatch(updateTitleSession(message));
@@ -150,26 +154,6 @@ const ChatBotContainer = () => {
         }
     };
 
-    // Render conversation
-    const renderMessages = () => {
-        return dataChatBotSelected?.messages?.map((msg, index) => {
-            if (dataChatBotSelected?.sessionType === 'text') {
-                return (
-                    <div
-                        key={index}
-                        className={`my-2 p-3 rounded-lg max-w-[70%] w-fit ${
-                            msg.role === 'user' ? 'bg-blue-900 ml-auto' : 'bg-gray-700 mr-auto'
-                        }`}
-                    >
-                        {msg.content}
-                    </div>
-                );
-            } else if (dataChatBotSelected?.sessionType === 'image') {
-                return <>He he Image</>;
-            }
-        });
-    };
-
     const handleCloseChat = () => {
         dispatch(setDataChatBotSelected(null));
         dispatch(closeChat());
@@ -204,8 +188,28 @@ const ChatBotContainer = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto scrollbar-hidden p-4 px-8 md:w-[65vw] lg:w-[70vw] xl:w-[80vw] w-full scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-transparent">
-                {renderMessages()}
-                {isLoading && <div className="text-center">Đang xử lý...</div>}
+                {dataChatBotSelected?.messages?.map((msg, index) => {
+                    return (
+                        <ItemMessage key={msg.id} msg={msg} index={index} sessionType={dataChatBotSelected.sessionType} />
+                    );
+                })}
+                {isLoading && (
+                    <div className="text-left flex justify-start items-start w-[80px] h-[40px]">
+                        <Lottie
+                            height={40}
+                            width={80}
+                            isClickToPauseDisabled={true}
+                            options={{
+                                loop: true,
+                                autoplay: true,
+                                animationData: dotsLoadingAnimation,
+                                rendererSettings: {
+                                    preserveAspectRatio: 'xMidYMid slice',
+                                },
+                            }}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Footer */}
@@ -239,6 +243,136 @@ const ChatBotContainer = () => {
             </div>
         </div>
     );
+};
+
+const ItemMessage = ({ msg, index, sessionType }) => {
+    const imageRef = useRef();
+    const [showImage, setShowImage] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
+
+    const handleDownloadFile = async (url) => {
+        const res = await apiClient.get(`${HOST}/${url}`, {
+            responseType: 'blob',
+        });
+        const urlBlob = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a');
+        link.href = urlBlob;
+        link.setAttribute('download', url.split('/').pop());
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(urlBlob);
+    };
+
+    const handleShowImage = (url) => {
+        setShowImage(true);
+        setImageUrl(url);
+    };
+
+    const handleCloseShowImage = () => {
+        setShowImage(false);
+        setImageUrl(null);
+    };
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (imageRef.current && !imageRef.current.contains(event.target)) {
+                setShowImage(false);
+                setImageUrl(null);
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    if (sessionType === 'text') {
+        return (
+            msg?.content && (
+                <div key={msg._id || index} className={`${msg.role !== 'user' ? 'text-left' : 'text-right'}`}>
+                    <div
+                        className={`${
+                            msg.role === 'user'
+                                ? 'bg-[#357fac]/5 text-[#357fac]/90 border-[#357fac]/50'
+                                : 'bg-[#2a2b33]/5 text-white/90 border-[#ffffff]/20'
+                        } border inline-block p-4 rounded my-1 max-w-[50%] break-words`}
+                    >
+                        <p>{msg.content}</p>
+                    </div>
+                </div>
+            )
+        );
+    }
+
+    // Tin nhắn hình ảnh
+    if (sessionType === 'image') {
+        return (
+            <>
+                <div key={msg._id || index} className={`${msg.role !== 'user' ? 'text-left' : 'text-right'}`}>
+                    <div
+                        className={`${
+                            msg.role === 'user'
+                                ? 'bg-[#357fac]/5 text-[#357fac]/90 border-[#357fac]/50'
+                                : 'bg-[#2a2b33]/5 text-white/90 border-[#ffffff]/20'
+                        } border inline-block p-4 rounded my-1 max-w-[50%] break-words`}
+                    >
+                        {msg.messageType === 'text' && <p>{msg.content}</p>}
+                        {msg.messageType === 'image' && (
+                            <div className="cursor-pointer" onClick={() => handleShowImage(msg.imageUrl)}>
+                                <img width={300} height={300} src={`${HOST}/${msg.imageUrl}`} />
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <AnimatePresence>
+                    {showImage && imageUrl && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="fixed z-[1000] top-0 left-0 h-[100vh] w-[100vw] flex items-center justify-center flex-col bg-black/80 backdrop-blur-lg"
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0.9 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <img ref={imageRef} className="h-[80vh] w-full bg-cover" src={`${HOST}/${imageUrl}`} />
+                            </motion.div>
+
+                            <div className="flex gap-5 fixed top-5 right-10">
+                                <motion.span
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className="bg-[#4c7189] p-2 text-xl rounded-full hover:bg-[#4c7189]/50 cursor-pointer transition-all duration-300"
+                                    onClick={() => handleDownloadFile(imageUrl)}
+                                >
+                                    <IoMdArrowDown />
+                                </motion.span>
+
+                                <motion.span
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className="bg-[#4c7189] p-2 text-xl rounded-full hover:bg-[#4c7189]/50 cursor-pointer transition-all duration-300"
+                                    onClick={handleCloseShowImage}
+                                >
+                                    <IoCloseSharp />
+                                </motion.span>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </>
+        );
+    }
+
+    // Fallback cho các trường hợp khác
+    return null;
 };
 
 export default ChatBotContainer;

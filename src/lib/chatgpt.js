@@ -1,7 +1,9 @@
 import { OpenAI } from 'openai';
+import { apiClient } from './api-client';
+import { UPLOAD_FILE } from '@/utils/constants';
 
-const openai = new OpenAI({
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+const openaiChat = new OpenAI({
+    apiKey: import.meta.env.VITE_OPENAI_API_KEY_IMAGE,
     dangerouslyAllowBrowser: true,
     baseOptions: {
         headers: {
@@ -13,7 +15,7 @@ const openai = new OpenAI({
 // Function chat với GPT
 export const chatWithGPT = async (messages) => {
     try {
-        const completion = await openai.chat.completions.create({
+        const completion = await openaiChat.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: messages,
         });
@@ -24,23 +26,66 @@ export const chatWithGPT = async (messages) => {
     }
 };
 
-// Function mới cho tạo ảnh
+const openaiImage = new OpenAI({
+    apiKey: import.meta.env.VITE_OPENAI_API_KEY_IMAGE,
+    dangerouslyAllowBrowser: true,
+    baseOptions: {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    },
+});
+
+// Function tạo ảnh với DALL-E và upload lên server
 export const generateImageWithDALLE = async (prompt) => {
     try {
-        const result = await openai.images.generate({
-            model: "gpt-image-1",
-            prompt: prompt,
-            size: "auto",
-            background: "transparent",
-            quality: "low",
+        // Bước 1: Tạo ảnh bằng DALL-E
+        const result = await openaiImage.images.generate({
+            model: 'gpt-image-1',
+            prompt,
+            size: 'auto',
+            quality: 'low',
+        });
+
+        if (!result.data[0]?.b64_json) {
+            return {
+                success: false,
+                message: 'Không nhận được dữ liệu ảnh từ DALL-E.',
+            };
+        }
+
+        const base64Data = result.data[0].b64_json;
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+            const byteNumbers = new Array(slice.length);
+
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, { type: 'image/png' });
+        const file = new File([blob], 'dalle-image.png', { type: 'image/png' });
+
+        // Bước 3: Upload file lên server
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const uploadRes = await apiClient.post(UPLOAD_FILE, formData, {
+            withCredentials: true,
         });
         
-
-        console.log('🚀 ~ generateImageWithDALLE ~ response:', result);
-
+        // Lấy URL từ phản hồi
+        const imageUrl = uploadRes.data.data.filePath;
         return {
             success: true,
-            url: result.data[0].b64_json
+            url: imageUrl, // URL thực từ server của bạn
         };
     } catch (error) {
         console.error('Full error:', {
@@ -50,7 +95,7 @@ export const generateImageWithDALLE = async (prompt) => {
         });
         return {
             success: false,
-            message: "Sorry, I couldn't generate the image.",
+            message: 'Xin lỗi, tôi không thể tạo hoặc tải lên ảnh.',
         };
     }
 };

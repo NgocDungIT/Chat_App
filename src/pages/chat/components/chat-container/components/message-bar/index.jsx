@@ -128,7 +128,7 @@ const MessageBar = () => {
                     onChange={(e) => setMessage(e.target.value)}
                 />
                 <button
-                    className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+                    className="text-neutral-500 focus:border-none focus:outline-none hover:text-white focus:text-white duration-300 transition-all"
                     onClick={handleAttachmentClick}
                 >
                     <GrAttachment className="text-2xl" />
@@ -136,7 +136,7 @@ const MessageBar = () => {
                 <input ref={fileInputRef} type="file" className="hidden" onChange={handleAttachmentChange} />
                 <div className="realtive">
                     <button
-                        className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+                        className="text-neutral-500 focus:border-none focus:outline-none hover:text-white focus:text-white duration-300 transition-all"
                         onClick={() => setOpenEmoji(true)}
                     >
                         <RiEmojiStickerLine className="text-2xl" />

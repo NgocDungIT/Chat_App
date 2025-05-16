@@ -15,6 +15,7 @@ export const UPDATE_USER = `${USER_ROUTES}/update-profile`;
 export const UPLOAD_IMAGE = `${USER_ROUTES}/upload-image`;
 export const DELETE_IMAGE = `${USER_ROUTES}/delete-image`;
 export const GET_USER = `${USER_ROUTES}/user-info`;
+export const GET_STREAM_TOKEN = `${USER_ROUTES}/get-stream-token`;
 
 export const SEARCH_CONTACTS = `${CONTACTS_ROUTES}/search`;
 export const GET_DM_CONTACTS = `${CONTACTS_ROUTES}/get-contacts-for-dm`;
@@ -25,6 +26,8 @@ export const GET_USER_CHANNELS = `${CHANNEL_ROUTES}/get-user-channels`;
 export const ADD_MEMBERS_CHANNEL = `${CHANNEL_ROUTES}/add-members-channel`;
 export const LEAVE_CHANNEL = `${CHANNEL_ROUTES}/leave-channel`;
 export const GET_CHANNEL_MESSAGES = `${CHANNEL_ROUTES}/get-messages-channel`;
+export const UPLOAD_IMAGE_CHANNEL = `${CHANNEL_ROUTES}/upload-image`;
+export const DELETE_IMAGE_CHANNEL = `${CHANNEL_ROUTES}/delete-image`;
 
 export const CREATE_SESSION_CHAT_BOT = `${CHAT_BOT_ROUTES}/create-session`;
 export const ADD_MESSAGE_SESSION = `${CHAT_BOT_ROUTES}/add-message-session`;
