@@ -50,6 +50,8 @@ const ChatHeader = () => {
 
     const [openModalRename, setOpenModalRename] = useState(false);
     const [openModalAddMember, setOpenModalAddMember] = useState(false);
+    const [openModalDeleteChannel, setOpenModalDeleteChannel] = useState(false);
+    const [openModalLeaveChannel, setOpenModalLeaveChannel] = useState(false);
     const [openSheet, setOpenSheet] = useState(false);
     const [newNameChannel, setNewNameChannel] = useState(chatData?.name || '');
 
@@ -329,7 +331,7 @@ const ChatHeader = () => {
                         </div>
                     </div>
                     <div className="flex items-center justify-center gap-5">
-                        {/* {chatType === 'contact' && <VideoCall />} */}
+                        {chatType === 'contact' && <VideoCall />}
                         <button
                             onClick={handleCloseChat}
                             className="text-neutral-500 focus:border-none focus:outline-none hover:text-white focus:text-white duration-300 transition-all"
@@ -497,7 +499,7 @@ const ChatHeader = () => {
                                                     </Button>
                                                     <Button
                                                         className="w-full bg-red-500 rounded-md flex items-center justify-center p-5 hover:bg-red-600 focus:bg-red-600 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
-                                                        onClick={() => handleDeleteChannel()}
+                                                        onClick={() => setOpenModalDeleteChannel(true)}
                                                     >
                                                         Delete channel
                                                     </Button>
@@ -505,7 +507,7 @@ const ChatHeader = () => {
                                             ) : (
                                                 <Button
                                                     className="w-full bg-red-500 rounded-md flex items-center justify-center p-5 hover:bg-red-600 focus:bg-red-600 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
-                                                    onClick={() => handleLeaveChannel()}
+                                                    onClick={() => setOpenModalLeaveChannel(true)}
                                                 >
                                                     Leave channel
                                                 </Button>
@@ -569,6 +571,48 @@ const ChatHeader = () => {
                                     onClick={() => submitAddMember()}
                                 >
                                     Add member
+                                </Button>
+                            </DialogDescription>
+                        </DialogHeader>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            <div>
+                <Dialog open={openModalDeleteChannel} onOpenChange={setOpenModalDeleteChannel}>
+                    <DialogContent className="bg-[#1c1d25] border-[#2f303b]">
+                        <DialogHeader>
+                            <DialogTitle className="text-white font-medium text-2xl">Delete channel</DialogTitle>
+                            <DialogDescription>
+                                <div className="mt-4">
+                                    <p className="text-white">Are you sure you want to delete this channel?</p>
+                                </div>
+                                <Button
+                                    className="mt-2 bg-red-400 rounded-md flex items-center justify-center p-5 hover:bg-red-600 focus:bg-red-600 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+                                    onClick={() => handleDeleteChannel()}
+                                >
+                                    Delete channel
+                                </Button>
+                            </DialogDescription>
+                        </DialogHeader>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            <div>
+                <Dialog open={openModalLeaveChannel} onOpenChange={setOpenModalLeaveChannel}>
+                    <DialogContent className="bg-[#1c1d25] border-[#2f303b]">
+                        <DialogHeader>
+                            <DialogTitle className="text-white font-medium text-2xl">Leave channel</DialogTitle>
+                            <DialogDescription>
+                                <div className="mt-4">
+                                    <p className="text-white">Are you sure you want to leave this channel?</p>
+                                </div>
+                                <Button
+                                    className="mt-2 bg-red-400 rounded-md flex items-center justify-center p-5 hover:bg-red-600 focus:bg-red-600 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+                                    onClick={() => handleLeaveChannel()}
+                                >
+                                    Leave channel
                                 </Button>
                             </DialogDescription>
                         </DialogHeader>

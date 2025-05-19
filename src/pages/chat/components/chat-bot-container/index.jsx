@@ -18,6 +18,7 @@ import { ADD_MESSAGE_SESSION, HOST } from '@/utils/constants';
 import { IoMdArrowDown } from 'react-icons/io';
 import Lottie from 'react-lottie';
 import dotsLoadingAnimation from '@/assets/animation-loading.json';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const ChatBotContainer = () => {
     const dispatch = useDispatch();
@@ -217,27 +218,51 @@ const ChatBotContainer = () => {
                 <div className="flex-1 flex bg-[#2a2b33] rounded-md items-center gap-5 pr-5">
                     <input
                         type="text"
-                        className="flex-1 p-5 bg-transparent rounded-md focus:border-none focus:outline-none"
+                        className={`flex-1 p-5 bg-transparent rounded-md focus:border-none focus:outline-none ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                         placeholder="Enter Message"
                         value={message}
+                        disabled={isLoading}
                         onChange={(e) => setMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault(); // Ngăn xuống dòng (nếu là textarea)
+                                dataChatBotSelected?.sessionType === 'text' && !isLoading && handleSendText();
+                                dataChatBotSelected?.sessionType === 'image' && !isLoading && handleCreateImage();
+                            }
+                        }}
                     />
                 </div>
                 {dataChatBotSelected?.sessionType === 'text' && (
                     <button
-                        className="bg-[#357fac] rounded-md flex items-center justify-center p-5 hover:bg-[#125b81] focus:bg-[#125b81] focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
-                        onClick={() => handleSendText()}
+                        className={`bg-[#357fac] rounded-md flex items-center justify-center p-5 hover:bg-[#125b81] focus:bg-[#125b81] focus:border-none focus:outline-none focus:text-white duration-300 transition-all ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        onClick={() => !isLoading && handleSendText()}
+                        disabled={isLoading}
                     >
-                        <IoSend className="text-2xl" />
+                        {isLoading ? (
+                            <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin" />
+                        ) : (
+                            <IoSend className="text-2xl" />
+                        )}
                     </button>
                 )}
 
                 {dataChatBotSelected?.sessionType === 'image' && (
                     <button
-                        className="bg-[#9eae4e] rounded-md flex items-center justify-center p-5 hover:bg-[#125b81] focus:bg-[#125b81] focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
-                        onClick={() => handleCreateImage()}
+                        className={`bg-[#9eae4e] rounded-md flex items-center justify-center p-5 hover:bg-[#125b81] focus:bg-[#125b81] focus:border-none focus:outline-none focus:text-white duration-300 transition-all ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        onClick={() => !isLoading && handleCreateImage()}
+                        disabled={isLoading}
                     >
-                        <IoSend className="text-2xl" />
+                        {isLoading ? (
+                            <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin" />
+                        ) : (
+                            <IoSend className="text-2xl" />
+                        )}
                     </button>
                 )}
             </div>

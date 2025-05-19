@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { MdFolderZip } from 'react-icons/md';
 import { IoMdArrowDown } from 'react-icons/io';
+import { IoCall } from "react-icons/io5";
 import { selectChatData, selectChatMessage, selectChatType, selectUserData, updateChatMessage } from '@/store/slices';
 import { apiClient } from '@/lib/api-client';
 import { GET_ALL_MESSAGES, GET_CHANNEL_MESSAGES, HOST } from '@/utils/constants';
@@ -158,6 +159,18 @@ const DMMessage = ({ chatData, message }) => {
                             <span>{message.fileUrl.split('/').pop()}</span>
                         </>
                     )}
+                    {
+                        message.messageType == 'call' && (
+                            <div className="flex items-center justify-center gap-4">
+                                <IoCall className='bg-[#125b81] text-white/90 rounded-full w-8 h-8 p-2' />
+                                <div className='flex flex-col'> 
+                                    <span>Video call</span>
+                                    <span>{message.callTime}</span>
+                                </div>
+                            </div>  
+                        )
+                    }
+
                 </div>
                 <div className="text-xs text-gray-600">{moment(message.timestamp).format('LT')}</div>
             </div>

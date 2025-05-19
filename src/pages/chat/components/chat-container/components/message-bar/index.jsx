@@ -37,6 +37,7 @@ const MessageBar = () => {
                     messageType: 'text',
                     content: message,
                     fileUrl: undefined,
+                    callTime: undefined,
                 };
                 socket.emit('sendMessage', { message: messageData, contact: chatData });
             } else if (chatType === 'channel') {
@@ -46,6 +47,7 @@ const MessageBar = () => {
                     messageType: 'text',
                     content: message,
                     fileUrl: undefined,
+                    callTime: undefined,
                 };
                 socket.emit('sendChannelMessage', messageData);
             }
@@ -84,6 +86,7 @@ const MessageBar = () => {
                             messageType: 'file',
                             content: null,
                             fileUrl: res.data.data.filePath,
+                            callTime: undefined,
                         };
                         socket.emit('sendMessage', { message: messageData, contact: chatData });
                     } else if (chatType === 'channel') {
@@ -93,6 +96,7 @@ const MessageBar = () => {
                             messageType: 'file',
                             content: null,
                             fileUrl: res.data.data.filePath,
+                            callTime: undefined,
                         };
                         socket.emit('sendChannelMessage', messageData);
                     }
@@ -126,6 +130,12 @@ const MessageBar = () => {
                     placeholder="Enter Message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault(); // Ngăn xuống dòng (nếu là textarea)
+                            handleSendMessage();
+                        }
+                    }}
                 />
                 <button
                     className="text-neutral-500 focus:border-none focus:outline-none hover:text-white focus:text-white duration-300 transition-all"
