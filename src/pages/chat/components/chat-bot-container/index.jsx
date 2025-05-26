@@ -1,4 +1,4 @@
-import { chatWithGPT, generateImageWithDALLE } from '@/lib/chatgpt';
+import { chatWithGPT, generateImageEditWithGPT, generateImageWithGPT } from '@/lib/chatgpt';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     closeChat,
@@ -19,6 +19,17 @@ import { IoMdArrowDown } from 'react-icons/io';
 import Lottie from 'react-lottie';
 import dotsLoadingAnimation from '@/assets/animation-loading.json';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { AvatarImage } from '@/components/ui/avatar';
+
+function getLastImageUrl(messages) {
+    // Duyệt mảng từ cuối về đầu để tìm phần tử có imageUrl
+    for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i]?.imageUrl) {
+            return messages[i].imageUrl;
+        }
+    }
+    return '';
+}
 
 const ChatBotContainer = () => {
     const dispatch = useDispatch();
@@ -26,6 +37,7 @@ const ChatBotContainer = () => {
 
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [urlEditImage, setUrlEditImage] = useState(getLastImageUrl(dataChatBotSelected.messages));
 
     const handleSendText = async () => {
         if (!message.trim()) return;
@@ -123,9 +135,10 @@ const ChatBotContainer = () => {
             );
 
             // Khi cần tạo ảnh từ prompt
-            const imageResponse = await generateImageWithDALLE(message);
+            const imageResponse = await generateImageWithGPT(message);
 
             if (imageResponse.success) {
+                setUrlEditImage(imageResponse.url);
                 const assistantMessage = {
                     role: 'assistant',
                     imageUrl: imageResponse.url,
@@ -155,10 +168,76 @@ const ChatBotContainer = () => {
         }
     };
 
+    const handleEditImage = async () => {
+        try {
+            if (!message.trim() || !urlEditImage?.trim()) return;
+
+            const userMessage = { role: 'user', content: message, messageType: 'text' };
+
+            if (!dataChatBotSelected.isUpdateTitle) {
+                dispatch(updateTitleSession(message));
+            }
+
+            dispatch(
+                updateChatBotMessage({
+                    newMessage: userMessage,
+                })
+            );
+            setIsLoading(true);
+
+            await apiClient.post(
+                ADD_MESSAGE_SESSION,
+                {
+                    sessionId: dataChatBotSelected._id,
+                    newMessage: userMessage,
+                    isUpdateTitle: dataChatBotSelected.isUpdateTitle,
+                },
+                {
+                    withCredentials: true,
+                }
+            );
+
+            const res = await generateImageEditWithGPT(`${HOST}/${urlEditImage}`, message);
+
+            if (res.success) {
+                setUrlEditImage(res.url);
+                const assistantMessage = {
+                    role: 'assistant',
+                    imageUrl: res.url,
+                    messageType: 'image',
+                };
+                dispatch(
+                    updateChatBotMessage({
+                        newMessage: assistantMessage,
+                    })
+                );
+                await apiClient.post(
+                    ADD_MESSAGE_SESSION,
+                    {
+                        sessionId: dataChatBotSelected._id,
+                        newMessage: assistantMessage,
+                    },
+                    {
+                        withCredentials: true,
+                    }
+                );
+            }
+        } catch (error) {
+            console.error('Error edit image: ', error);
+        } finally {
+            setMessage('');
+            setIsLoading(false);
+        }
+    };
+
     const handleCloseChat = () => {
         dispatch(setDataChatBotSelected(null));
         dispatch(closeChat());
     };
+
+    useEffect(() => {
+        setUrlEditImage(getLastImageUrl(dataChatBotSelected.messages));
+    }, [dataChatBotSelected.messages])
 
     return (
         <div className="flex top-0 h-[100vh] w-[100vw] bg-[#1c1d25] flex-col md:static md:flex-1">
@@ -168,9 +247,11 @@ const ChatBotContainer = () => {
                     <div className="flex gap3 items-center justify-center">
                         <div className="h-12 w-12 -min-h-12 min-w-12 relative rounded-full overflow-hidden">
                             <Avatar className="h-12 w-12 rounded-full overflow-hidden">
-                                <div className="bg-[#ffffff22] h-12 w-12 flex rounded-full items-center justify-center">
-                                    #
-                                </div>
+                                <AvatarImage
+                                    className="bg-[#ffffff22] max-h-12 max-w-12 object-cover flex rounded-full items-center justify-center"
+                                    src={'/public/bot.gif'}
+                                    alt="bot-image"
+                                />
                             </Avatar>
                         </div>
                         <div className="ml-2">
@@ -251,19 +332,37 @@ const ChatBotContainer = () => {
                 )}
 
                 {dataChatBotSelected?.sessionType === 'image' && (
-                    <button
-                        className={`bg-[#9eae4e] rounded-md flex items-center justify-center p-5 hover:bg-[#125b81] focus:bg-[#125b81] focus:border-none focus:outline-none focus:text-white duration-300 transition-all ${
-                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                        onClick={() => !isLoading && handleCreateImage()}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin" />
+                    <>
+                        {urlEditImage ? (
+                            <button
+                                className={`bg-[#c97154] rounded-md flex items-center justify-center p-5 hover:bg-[#125b81] focus:bg-[#125b81] focus:border-none focus:outline-none focus:text-white duration-300 transition-all ${
+                                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                                onClick={() => !isLoading && handleEditImage()}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin" />
+                                ) : (
+                                    <IoSend className="text-2xl" />
+                                )}
+                            </button>
                         ) : (
-                            <IoSend className="text-2xl" />
+                            <button
+                                className={`bg-[#9eae4e] rounded-md flex items-center justify-center p-5 hover:bg-[#125b81] focus:bg-[#125b81] focus:border-none focus:outline-none focus:text-white duration-300 transition-all ${
+                                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                                onClick={() => !isLoading && handleCreateImage()}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin" />
+                                ) : (
+                                    <IoSend className="text-2xl" />
+                                )}
+                            </button>
                         )}
-                    </button>
+                    </>
                 )}
             </div>
         </div>

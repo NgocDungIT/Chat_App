@@ -78,12 +78,27 @@ export const chatSlice = createSlice({
                 }
             }
         },
+        updateChannelMembers(state, action) {
+            const { channelId, userId } = action.payload;
+            if (action?.payload && channelId && userId) {
+                const index = state.channels.findIndex((item) => item._id === channelId);
+                if (index !== -1) {
+                    state.channels[index].members = state.channels[index].members.filter((member) => member._id !== userId);
+                }
+                if (state.chatData) {
+                    state.chatData.members = state.chatData.members.filter((member) => member._id !== userId);
+                }
+            }
+        },
         updateChannelName(state, action) {
             const { channelId, newTitle } = action.payload;
             const index = state.channels.findIndex((item) => item._id === channelId);
             if (index !== -1) {
                 state.channels[index].name = newTitle;
-                state.chatData.name = newTitle;
+
+                if (state.chatData?._id === channelId) {
+                    state.chatData.name = newTitle;
+                }
             }
         },
         leaveChannel(state, action) {
@@ -98,7 +113,9 @@ export const chatSlice = createSlice({
             const index = state.channels.findIndex((item) => item._id === channelId);
             if (index !== -1) {
                 state.channels[index].image = url;
-                state.chatData.image = url;
+                if (state.chatData?._id === channelId) {
+                    state.chatData.image = url;
+                }
             }
         },
     },
@@ -121,6 +138,7 @@ export const {
     updateChannelName,
     leaveChannel,
     updateChannelImage,
+    updateChannelMembers,
 } = chatSlice.actions;
 
 export const selectChatType = (state) => state.chat.chatType;

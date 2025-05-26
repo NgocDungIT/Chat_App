@@ -15,6 +15,7 @@ import {
     selectChatType,
     selectUserData,
     updateChannelImage,
+    updateChannelMembers,
     updateChannelName,
     updateChatData,
 } from '@/store/slices';
@@ -28,7 +29,7 @@ import {
 import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
 import { useEffect, useRef, useState } from 'react';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import { FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { FiEdit2, FiUpload } from 'react-icons/fi';
 import { RiCloseFill, RiInformation2Fill } from 'react-icons/ri';
 import { useDispatch, useSelector } from 'react-redux';
@@ -52,8 +53,10 @@ const ChatHeader = () => {
     const [openModalAddMember, setOpenModalAddMember] = useState(false);
     const [openModalDeleteChannel, setOpenModalDeleteChannel] = useState(false);
     const [openModalLeaveChannel, setOpenModalLeaveChannel] = useState(false);
+    const [openModalKickedChannel, setOpenModalKickedChannel] = useState(false);
     const [openSheet, setOpenSheet] = useState(false);
     const [newNameChannel, setNewNameChannel] = useState(chatData?.name || '');
+    const [idMemberSelected, setIdMemberSelected] = useState('');
 
     const handleCloseChat = () => {
         dispatch(closeChat());
@@ -70,8 +73,9 @@ const ChatHeader = () => {
             });
 
             setOpenModalRename(false);
+            toast.success('Rename channel successfully.');
         } catch (error) {
-            toast('Failed to rename channel');
+            toast.error('Failed to rename channel');
             console.error(error);
         }
     };
@@ -100,9 +104,10 @@ const ChatHeader = () => {
                     dispatch(updateChatData(res.data.channel));
                 }
                 setOpenModalAddMember(false);
+                toast.success('Add members channel successfully.');
             }
         } catch (error) {
-            toast('Failed to add members channel');
+            toast.error('Failed to add members channel');
             console.error(error);
         }
     };
@@ -128,9 +133,10 @@ const ChatHeader = () => {
                 );
                 setOpenSheet(false);
                 dispatch(closeChat());
+                toast.success('Leave channel successfully.');
             }
         } catch (error) {
-            toast('Failed to rename channel');
+            toast.error('Failed to leave channel');
             console.error(error);
         }
     };
@@ -150,8 +156,34 @@ const ChatHeader = () => {
                 })
             );
             dispatch(closeChat());
+            toast.success('Delete channel successfully.');
         } catch (error) {
-            toast('Failed to delete channel');
+            toast.error('Failed to delete channel');
+            console.error(error);
+        }
+    };
+
+    const handleKickedChannel = () => {
+        if (!idMemberSelected.trim()) return;
+        if (!chatData?._id.trim()) return;
+
+        try {
+            socket.emit('kickMemberChannel', {
+                channel: chatData,
+                userId: idMemberSelected,
+            });
+
+            setOpenModalKickedChannel(false);
+            dispatch(
+                updateChannelMembers({
+                    channelId: chatData?._id,
+                    userId: idMemberSelected,
+                })
+            );
+            setIdMemberSelected('');
+            toast.success('Kicked member successfully.');
+        } catch (error) {
+            toast.error('Failed to kicked member channel');
             console.error(error);
         }
     };
@@ -179,10 +211,10 @@ const ChatHeader = () => {
                         })
                     );
 
-                    toast('Delete avatar channel successfully');
+                    toast.success('Delete avatar channel successfully');
                 })
                 .catch(() => {
-                    toast('Failed to delete avatar. Please try again');
+                    toast.error('Failed to delete avatar. Please try again');
                 })
                 .finally(() => {
                     setLoadingImage(false);
@@ -218,10 +250,10 @@ const ChatHeader = () => {
                             url: response.data?.url || null,
                         })
                     );
-                    toast('Upload avatar channel successfully');
+                    toast.success('Upload avatar channel successfully');
                 })
                 .catch(() => {
-                    toast('Failed to load avatar channel. Please try again');
+                    toast.error('Failed to load avatar channel. Please try again');
                 })
                 .finally(() => {
                     setLoadingImage(false);
@@ -265,7 +297,7 @@ const ChatHeader = () => {
             socket.off('channelDeleted', handleChannelDeleted);
             socket.off('channelChangedImage', handleChannelChangedImage);
         };
-    }, [socket, dispatch]);
+    }, [socket, dispatch, chatData]);
 
     useEffect(() => {
         const getData = async () => {
@@ -483,6 +515,13 @@ const ChatHeader = () => {
                                                                 ? `${member.firstName} ${member.lastName}`
                                                                 : `${member.email}`}
                                                         </div>
+                                                        <FaEdit
+                                                            className="text-sm text-red-300 ml-auto cursor-pointer"
+                                                            onClick={() => {
+                                                                setIdMemberSelected(member._id);
+                                                                setOpenModalKickedChannel(true);
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
@@ -613,6 +652,26 @@ const ChatHeader = () => {
                                     onClick={() => handleLeaveChannel()}
                                 >
                                     Leave channel
+                                </Button>
+                            </DialogDescription>
+                        </DialogHeader>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            <div>
+                <Dialog open={openModalKickedChannel} onOpenChange={setOpenModalKickedChannel}>
+                    <DialogContent className="bg-[#1c1d25] border-[#2f303b]">
+                        <DialogHeader>
+                            <DialogTitle>
+                                <p className="text-white text-xl">Are you sure you want to kick this member?</p>
+                            </DialogTitle>
+                            <DialogDescription>
+                                <Button
+                                    className="mt-2 bg-red-400 rounded-md flex items-center justify-center p-5 hover:bg-red-600 focus:bg-red-600 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+                                    onClick={() => handleKickedChannel()}
+                                >
+                                    Yes
                                 </Button>
                             </DialogDescription>
                         </DialogHeader>

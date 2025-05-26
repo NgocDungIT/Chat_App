@@ -6,7 +6,10 @@ import { GET_DM_CONTACTS, GET_USER_CHANNELS } from '@/utils/constants';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     addDirectMessagesContacts,
+    closeChat,
+    leaveChannel,
     selectChannels,
+    selectChatData,
     selectDirectMessagesContacts,
     selectUserData,
     updateChannel,
@@ -17,11 +20,13 @@ import CreateChannel from '../create-channel';
 import CreateChatBot from '../create-chatbot';
 import ChatBotList from '@/components/chatbots-list';
 import { useSocket } from '@/context/SocketContext';
+import { toast } from 'sonner';
 
 const ContactsContainer = () => {
     const dispatch = useDispatch();
     const socket = useSocket();
     const directMessagesContacts = useSelector(selectDirectMessagesContacts);
+    const chatData = useSelector(selectChatData);
     const channels = useSelector(selectChannels);
     const user = useSelector(selectUserData);
 
@@ -54,18 +59,34 @@ const ContactsContainer = () => {
         if (!socket) return;
 
         const handleAddDirectContact = (contact) => {
-            dispatch(addDirectMessagesContacts({
-                ...contact,
-                idUser: user.id,
-            }));
+            dispatch(
+                addDirectMessagesContacts({
+                    ...contact,
+                    idUser: user.id,
+                })
+            );
+        };
+
+        const handleUserIsKickedOut = ({ channelId }) => {
+            dispatch(
+                leaveChannel({
+                    channelId,
+                })
+            );
+            if (chatData._id === channelId) {
+                dispatch(closeChat());
+                toast('You have been kicked out of the channel.');
+            }
         };
 
         socket.on('addDirectContact', handleAddDirectContact);
+        socket.on('userIsKickedOut', handleUserIsKickedOut);
 
         return () => {
             socket.off('addDirectContact', handleAddDirectContact);
+            socket.off('userIsKickedOut', handleUserIsKickedOut);
         };
-    }, [socket, dispatch, user.id]);
+    }, [socket, dispatch, user, chatData, channels]);
 
     return (
         <div className="realtive max-h-[100vh] md:w-[35vw] lg:w-[30vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] flex flex-col">

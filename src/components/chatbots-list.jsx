@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 import { CiMenuKebab } from 'react-icons/ci';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { toast } from 'sonner';
+import { Avatar, AvatarImage } from './ui/avatar';
 
 const ChatBotList = () => {
     const dispatch = useDispatch();
@@ -74,9 +75,13 @@ const ChatBotList = () => {
                                 <TooltipTrigger className="w-full">
                                     <div className="flex gap-2 justify-between items-center">
                                         <div className="flex flex-1 overflow-hidden gap-5 items-center justify-start text-neutral-300">
-                                            <div className="bg-[#ffffff22] h-10 w-10 min-h-10 min-w-10 flex rounded-full items-center justify-center">
-                                                #
-                                            </div>
+                                            <Avatar className="h-10 w-10 rounded-full overflow-hidden">
+                                                <AvatarImage
+                                                    className="bg-[#ffffff22] max-h-10 max-w-10 object-cover flex rounded-full items-center justify-center"
+                                                    src={'/public/bot.gif'}
+                                                    alt="bot-image"
+                                                />
+                                            </Avatar>
                                             <span className="truncate overflow-hidden whitespace-nowrap text-ellipsis mr-4">
                                                 {item.title.split(' ').length >= 4
                                                     ? `${item.title.split(' ').slice(0, 4).join(' ')} ...`

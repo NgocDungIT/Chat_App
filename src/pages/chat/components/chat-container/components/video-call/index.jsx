@@ -120,7 +120,7 @@ function VideoCall() {
             fileUrl: undefined,
             callTime: formatTime(callDuration),
         };
-        
+
         socket.emit('sendMessage', { message: messageData, contact: chatData });
 
         clearCall();
@@ -129,25 +129,15 @@ function VideoCall() {
     useEffect(() => {
         if (!socket) return;
 
-        navigator.mediaDevices
-            .getUserMedia({ video: true, audio: true })
-            .then((stream) => {
-                setStream(stream);
-                myVideo.current.srcObject = stream;
-            })
-            .catch((err) => {
-                console.error('Failed to get media devices', err);
-            });
-
-        socket.on('callUser', (data) => {
+        const handleCallUser = (data) => {
             setInfoCallData(data.from);
             setStartCall(true);
             setReceivingCall(true);
             setCallerSignal(data.signal);
             setCallStatus('ringing');
-        });
+        };
 
-        socket.on('callEnded', () => {
+        const handleCallEnded = () => {
             const messageData = {
                 sender: infoCallData ? infoCallData.id : user.id,
                 recipient: infoCallData ? user.id : chatData._id,
@@ -159,9 +149,25 @@ function VideoCall() {
             socket.emit('sendMessage', { message: messageData, contact: chatData });
 
             clearCall();
-        });
+        };
+
+        navigator.mediaDevices
+            .getUserMedia({ video: true, audio: true })
+            .then((stream) => {
+                setStream(stream);
+                myVideo.current.srcObject = stream;
+            })
+            .catch((err) => {
+                console.error('Failed to get media devices', err);
+            });
+
+        socket.on('callUser', handleCallUser);
+
+        socket.on('callEnded', handleCallEnded);
 
         return () => {
+            socket.off('callEnded', handleCallEnded);
+            socket.off('callUser', handleCallUser);
             if (connectionRef.current) {
                 connectionRef.current.destroy();
             }
