@@ -9,6 +9,7 @@ export const CHAT_BOT_ROUTES = 'api/chat-bot';
 
 export const SIGNUP_ROUTE = `${AUTH_ROUTES}/signup`;
 export const LOGIN_ROUTE = `${AUTH_ROUTES}/login`;
+export const VERIFY_OTP = `${AUTH_ROUTES}/verify-otp`;
 export const LOGIN_GOOGLE_ROUTE = `${AUTH_ROUTES}/login-google`;
 export const LOGOUT_ROUTE = `${AUTH_ROUTES}/logout`;
 export const UPDATE_USER = `${USER_ROUTES}/update-profile`;
