@@ -8,6 +8,11 @@ import { useDispatch } from 'react-redux';
 import { updateUserData } from '@/store/slices/authSlice';
 import { useGoogleLogin } from '@react-oauth/google';
 
+function isValidEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
 const Login = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -18,6 +23,10 @@ const Login = () => {
         if (!email) {
             toast('Email is required!');
             return false;
+        }
+        if (!isValidEmail(email)) {
+            toast('Email is not in correct format!');
+            return;
         }
 
         if (!password) {
@@ -103,7 +112,7 @@ const Login = () => {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                         <div className="text-end w-full mt-2">
-                            <Link to="/chat" className="text-xs text-gray-500 hover:text-gray-900" variant="link">
+                            <Link to="/forgot-password" className="text-xs text-gray-500 hover:text-gray-900" variant="link">
                                 Forgot Password
                             </Link>
                         </div>

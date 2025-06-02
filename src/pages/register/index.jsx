@@ -5,6 +5,11 @@ import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
 import { SIGNUP_ROUTE, VERIFY_OTP } from '@/utils/constants';
 
+function isValidEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
 const Register = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
@@ -20,12 +25,17 @@ const Register = () => {
             return false;
         }
 
+        if (!isValidEmail(email)) {
+            toast('Email is not in correct format!');
+            return;
+        }
+
         if (!password) {
             toast('Password is required!');
             return false;
         }
 
-        if (password.length < 6) {
+        if (password.trim().length < 6) {
             toast('Password must be at least 6 characters long!');
             return false;
         }
@@ -139,7 +149,7 @@ const Register = () => {
                                     <p className="mt-6 text-xs text-gray-600 text-center">
                                         Already have an account?{' '}
                                         <Link to="/login" className="text-blue-900 font-semibold" variant="link">
-                                            Sign Up
+                                            Login
                                         </Link>
                                     </p>
                                 </div>
@@ -182,4 +192,5 @@ const Register = () => {
         </div>
     );
 };
+
 export default Register;

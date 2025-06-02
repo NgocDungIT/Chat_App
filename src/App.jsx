@@ -9,6 +9,7 @@ import Login from './pages/auth';
 import Profile from './pages/profile';
 import Chat from './pages/chat';
 import './App.css';
+import ForgotPassword from './pages/forgot-password';
 
 // eslint-disable-next-line react/prop-types
 const PrivateRoute = ({ children }) => {
@@ -55,6 +56,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route
                     path="/login"
                     element={
