@@ -15,8 +15,9 @@ import { SEARCH_CONTACTS } from '@/utils/constants';
 
 const NewDM = () => {
     const dispatch = useDispatch();
-
+    
     const user = useSelector(selectUserData);
+    
     const [isFeatching, setIsFeatching] = useState(false);
     const [openContactModal, setOpenContactModal] = useState(false);
     const [textSearchContacts, setTextSearchContacts] = useState('');

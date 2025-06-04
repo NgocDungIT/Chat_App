@@ -1,15 +1,17 @@
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useSocket } from '@/context/SocketContext';
-import { selectChatData, selectUserData } from '@/store/slices';
+import { selectChatData, selectOnlineUsers, selectUserData } from '@/store/slices';
 import { useRef, useEffect, useState } from 'react';
 import { MdOutlineVideoCall, MdCallEnd, MdCall } from 'react-icons/md';
 import { useSelector } from 'react-redux';
 import Peer from 'simple-peer';
+import { toast } from 'sonner';
 
 function VideoCall() {
     const socket = useSocket();
     const chatData = useSelector(selectChatData);
     const user = useSelector(selectUserData);
+    const onlineUsers = useSelector(selectOnlineUsers);
 
     const myVideo = useRef();
     const userVideo = useRef();
@@ -23,6 +25,8 @@ function VideoCall() {
     const [infoCallData, setInfoCallData] = useState(null);
     const [callStatus, setCallStatus] = useState('idle'); // 'idle', 'calling', 'ringing', 'in_call'
     const [callDuration, setCallDuration] = useState(0);
+
+    const isOnline = onlineUsers?.includes(chatData?._id) || false;
 
     const clearCall = () => {
         setReceivingCall(false);
@@ -59,6 +63,11 @@ function VideoCall() {
     }, [callAccepted, callEnded]);
 
     const callUser = () => {
+        if(!isOnline){
+            toast('Người dùng không online. Vui lòng gọi lại sau.');
+            return;
+        }
+
         setStartCall(true);
         setCallStatus('calling');
         const peer = new Peer({
@@ -138,16 +147,6 @@ function VideoCall() {
         };
 
         const handleCallEnded = () => {
-            const messageData = {
-                sender: infoCallData ? infoCallData.id : user.id,
-                recipient: infoCallData ? user.id : chatData._id,
-                messageType: 'call',
-                content: undefined,
-                fileUrl: undefined,
-                callTime: formatTime(callDuration),
-            };
-            socket.emit('sendMessage', { message: messageData, contact: chatData });
-
             clearCall();
         };
 

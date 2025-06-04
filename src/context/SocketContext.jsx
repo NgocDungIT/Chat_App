@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addChat, selectUserData } from '@/store/slices';
+import { addChat, selectUserData, updateOnlineUsers } from '@/store/slices';
 import { HOST } from '@/utils/constants';
 import { store } from '@/store';
 
@@ -51,8 +51,14 @@ const SocketProvider = ({ children }) => {
                 }
             };
 
+            const handleOnlineUsers = (data) => {
+                dispatch(updateOnlineUsers(data));
+            }
+
             newSocket.on('recieveMessage', handleRecieveMessage);
             newSocket.on('recieveChannelMessage', handleRecieveChannelMessage);
+            newSocket.on('onlineUsers', handleOnlineUsers);
+
 
             return () => {
                 console.log('🔌 Disconnecting socket...');

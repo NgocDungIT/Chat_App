@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
 import { CHANGE_PASSWORD, SEND_OTP, VERIFY_EMAIL } from '@/utils/constants';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 function isValidEmail(email) {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
 }
 
 const ForgotPassword = () => {
@@ -20,6 +21,7 @@ const ForgotPassword = () => {
     const [isVerifySuccess, setIsVerifySuccess] = useState(false);
     const [timeOpt, setTimeOpt] = useState(0);
     const [otp, setOtp] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const validateValue = () => {
         if (!password) {
@@ -56,6 +58,7 @@ const ForgotPassword = () => {
             return;
         }
 
+        setIsLoading(true);
         const res = await apiClient.post(SEND_OTP, { email }, { withCredentials: true });
         if (res?.status == 200 && res?.data?.success) {
             setTimeOpt(10 * 60);
@@ -63,6 +66,7 @@ const ForgotPassword = () => {
         } else {
             toast(res?.data?.message);
         }
+        setIsLoading(false);
     };
 
     const handleVerifyEmail = async () => {
@@ -71,6 +75,7 @@ const ForgotPassword = () => {
             return;
         }
 
+        setIsLoading(true);
         const res = await apiClient.post(VERIFY_EMAIL, { email, otp }, { withCredentials: true });
         if (res?.status == 200 && res?.data) {
             if (res?.data?.status) {
@@ -81,10 +86,13 @@ const ForgotPassword = () => {
                 toast(res?.data?.message);
             }
         }
+        setIsLoading(false);
     };
 
     const handleChangePassword = async () => {
         if (validateValue()) {
+            setIsLoading(true);
+
             const res = await apiClient.post(CHANGE_PASSWORD, { email, otp, password }, { withCredentials: true });
             if (res?.status == 200 && res?.data) {
                 if (res?.data?.success) {
@@ -97,6 +105,7 @@ const ForgotPassword = () => {
                     toast(res?.data?.message);
                 }
             }
+            setIsLoading(false);
         }
     };
 
@@ -131,16 +140,20 @@ const ForgotPassword = () => {
                                     type="email"
                                     placeholder="Email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => !isLoading && setEmail(e.target.value)}
                                 />
                             </div>
 
                             <div className="mt-8">
                                 <button
-                                    onClick={handleSendOTP}
-                                    className="bg-blue-700 text-white font-bold py-2 px-4 w-full rounded hover:bg-blue-600"
+                                    onClick={!isLoading && handleSendOTP}
+                                    className="bg-blue-700 flex justify-center items-center text-white font-bold py-2 px-4 w-full rounded hover:bg-blue-600"
                                 >
-                                    Send OTP
+                                    {isLoading ? (
+                                        <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin m-auto" />
+                                    ) : (
+                                        'Send OTP'
+                                    )}
                                 </button>
                             </div>
                         </>
@@ -155,7 +168,7 @@ const ForgotPassword = () => {
                                 type="number"
                                 placeholder="Enter your OTP"
                                 value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
+                                onChange={(e) => !isLoading && setOtp(e.target.value)}
                             />
 
                             <div className="mb-1">
@@ -166,7 +179,7 @@ const ForgotPassword = () => {
                                 ) : (
                                     <div
                                         className="cursor-pointer w-fit mt-2 text-sm text-blue-600 hover:text-blue-700"
-                                        onClick={() => handleSendOTP()}
+                                        onClick={() => !isLoading && handleSendOTP()}
                                     >
                                         Resend OTP
                                     </div>
@@ -174,10 +187,14 @@ const ForgotPassword = () => {
                             </div>
 
                             <button
-                                onClick={handleVerifyEmail}
-                                className="bg-green-700 text-white font-bold py-2 px-4 w-full rounded hover:bg-green-600"
+                                onClick={!isLoading && handleVerifyEmail}
+                                className="bg-green-700 flex items-center justify-center text-white font-bold py-2 px-4 w-full rounded hover:bg-green-600"
                             >
-                                Confirm
+                                {isLoading ? (
+                                    <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin m-auto" />
+                                ) : (
+                                    'Confirm'
+                                )}
                             </button>
                         </div>
                     )}
@@ -192,7 +209,7 @@ const ForgotPassword = () => {
                                     type="password"
                                     placeholder="Password new"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => !isLoading && setPassword(e.target.value)}
                                 />
                             </div>
 
@@ -204,15 +221,19 @@ const ForgotPassword = () => {
                                     type="password"
                                     placeholder="Confirm password"
                                     value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    onChange={(e) => !isLoading && setConfirmPassword(e.target.value)}
                                 />
                             </div>
 
                             <button
-                                onClick={handleChangePassword}
-                                className="bg-green-700 mt-4 text-white font-bold py-2 px-4 w-full rounded hover:bg-green-600"
+                                onClick={!isLoading && handleChangePassword}
+                                className="bg-green-700 flex items-center justify-center mt-4 text-white font-bold py-2 px-4 w-full rounded hover:bg-green-600"
                             >
-                                Save
+                                {isLoading ? (
+                                    <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin m-auto" />
+                                ) : (
+                                    'Save'
+                                )}
                             </button>
                         </>
                     )}

@@ -1,11 +1,19 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { selectChatData, setDataChatBotSelected, updateChatData, updateChatMessage, updateChatType } from '@/store/slices';
+import {
+    selectChatData,
+    selectOnlineUsers,
+    setDataChatBotSelected,
+    updateChatData,
+    updateChatMessage,
+    updateChatType,
+} from '@/store/slices';
 import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
 import { getColor } from '@/lib/utils';
 
 const ContactsList = ({ isChannel = false, contacts }) => {
     const dispatch = useDispatch();
     const chatData = useSelector(selectChatData);
+    const onlineUsers = useSelector(selectOnlineUsers);
 
     const handleClick = (contact) => {
         dispatch(setDataChatBotSelected(null));
@@ -24,6 +32,7 @@ const ContactsList = ({ isChannel = false, contacts }) => {
             {contacts.length > 0 && (
                 <div className="mt-5">
                     {contacts.map((contact) => {
+                        const isOnline = onlineUsers?.includes(contact?._id) || false;
                         return (
                             <div
                                 key={contact._id}
@@ -37,7 +46,7 @@ const ContactsList = ({ isChannel = false, contacts }) => {
                             >
                                 <div className="flex gap-5 items-center justify-start text-neutral-300">
                                     {!isChannel ? (
-                                        <Avatar className="h-10 w-10 rounded-full overflow-hidden">
+                                        <Avatar className="h-10 w-10 rounded-full relative">
                                             {contact?.image ? (
                                                 <AvatarImage
                                                     src={contact.image}
@@ -57,6 +66,9 @@ const ContactsList = ({ isChannel = false, contacts }) => {
                                                         ? contact.firstName.split('').shift()
                                                         : contact.email.split('').shift()}
                                                 </div>
+                                            )}
+                                            {isOnline && (
+                                                <span className="absolute bottom-0 right-0 rounded-full w-3 h-3 bg-[#3FBB46]"></span>
                                             )}
                                         </Avatar>
                                     ) : (

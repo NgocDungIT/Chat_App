@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
 import { SIGNUP_ROUTE, VERIFY_OTP } from '@/utils/constants';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 function isValidEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,6 +19,7 @@ const Register = () => {
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [timeOpt, setTimeOpt] = useState(0);
     const [otp, setOtp] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const validateValue = () => {
         if (!email) {
@@ -55,11 +57,13 @@ const Register = () => {
 
     const handleSign = async () => {
         if (validateValue()) {
+            setIsLoading(true);
             const res = await apiClient.post(SIGNUP_ROUTE, { email, password }, { withCredentials: true });
             if (res?.status == 200 && res?.data?.success) {
                 setTimeOpt(10 * 60); // Set time for OTP to 10 minutes
                 setIsConfirmed(true);
             }
+            setIsLoading(false);
         }
     };
 
@@ -69,6 +73,7 @@ const Register = () => {
             return;
         }
 
+        setIsLoading(true);
         const res = await apiClient.post(`${VERIFY_OTP}`, { email, password, otp }, { withCredentials: true });
         if (res?.status == 201 && res?.data?.data) {
             toast('Register successfully.');
@@ -76,6 +81,7 @@ const Register = () => {
         } else {
             toast(res?.data?.message || 'Failed to verify OTP.');
         }
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -111,40 +117,46 @@ const Register = () => {
                                         type="email"
                                         placeholder="Enter your email"
                                         value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        onChange={(e) => !isLoading && setEmail(e.target.value)}
                                     />
 
                                     <Input
                                         type="password"
                                         placeholder="Enter your password"
                                         value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
+                                        onChange={(e) => !isLoading && setPassword(e.target.value)}
                                     />
 
                                     <Input
                                         type="password"
                                         placeholder="Confirm password"
                                         value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        onChange={(e) => !isLoading && setConfirmPassword(e.target.value)}
                                     />
 
                                     <button
-                                        onClick={handleSign}
+                                        onClick={!isLoading && handleSign}
                                         className="mt-2 tracking-wide font-semibold bg-blue-900 text-gray-100 w-full py-3 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none"
                                     >
-                                        <svg
-                                            className="w-6 h-6 -ml-2"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                                            <circle cx="8.5" cy="7" r="4" />
-                                            <path d="M20 8v6M23 11h-6" />
-                                        </svg>
-                                        <span className="ml-3">Sign Up</span>
+                                        {isLoading ? (
+                                            <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin m-auto" />
+                                        ) : (
+                                            <>
+                                                <svg
+                                                    className="w-6 h-6 -ml-2"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                >
+                                                    <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                                    <circle cx="8.5" cy="7" r="4" />
+                                                    <path d="M20 8v6M23 11h-6" />
+                                                </svg>
+                                                <span className="ml-3">Sign Up</span>
+                                            </>
+                                        )}
                                     </button>
                                     <p className="mt-6 text-xs text-gray-600 text-center">
                                         Already have an account?{' '}
@@ -159,7 +171,7 @@ const Register = () => {
                                         type="number"
                                         placeholder="Enter your OTP"
                                         value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
+                                        onChange={(e) => !isLoading && setOtp(e.target.value)}
                                     />
 
                                     <div className="mt-[-12px]">
@@ -170,7 +182,7 @@ const Register = () => {
                                         ) : (
                                             <div
                                                 className="cursor-pointer w-fit mt-2 text-sm text-blue-600 hover:text-blue-700"
-                                                onClick={() => handleSign()}
+                                                onClick={() => !isLoading && handleSign()}
                                             >
                                                 Resend OTP
                                             </div>
@@ -178,10 +190,14 @@ const Register = () => {
                                     </div>
 
                                     <button
-                                        onClick={handleVerifyOtp}
+                                        onClick={!isLoading && handleVerifyOtp}
                                         className="mt-2 tracking-wide font-semibold bg-green-500 text-gray-100 w-full py-3 rounded-lg hover:bg-green-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none"
                                     >
-                                        <span className="ml-3">Verify OTP</span>
+                                        {isLoading ? (
+                                            <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin m-auto" />
+                                        ) : (
+                                            <span className="ml-3">Verify OTP</span>
+                                        )}
                                     </button>
                                 </div>
                             )}

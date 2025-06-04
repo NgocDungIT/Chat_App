@@ -13,6 +13,7 @@ import {
     leaveChannel,
     selectChatData,
     selectChatType,
+    selectOnlineUsers,
     selectUserData,
     updateChannelImage,
     updateChannelMembers,
@@ -42,12 +43,15 @@ const ChatHeader = () => {
     const chatData = useSelector(selectChatData);
     const user = useSelector(selectUserData);
     const chatType = useSelector(selectChatType);
+    const onlineUsers = useSelector(selectOnlineUsers);
+    const isOnline = onlineUsers?.includes(chatData?._id) || false;
 
     const fileInputRef = useRef();
     const [hovered, setHovered] = useState(false);
     const [loadingImage, setLoadingImage] = useState(false);
     const [allContacts, setAllContacts] = useState([]);
     const [selectedContacts, setSelectedContacts] = useState([]);
+    // const [isOnline, setIsOnline] = useState(false);
 
     const [openModalRename, setOpenModalRename] = useState(false);
     const [openModalAddMember, setOpenModalAddMember] = useState(false);
@@ -316,8 +320,8 @@ const ChatHeader = () => {
             <div className="h-[10vh] border-b-2 border-[#2f303b] flex items-center justify-between px-20">
                 <div className="flex gap-5 w-full justify-between">
                     <div className="flex gap3 items-center justify-center">
-                        <div className="h-12 w-12 relative rounded-full overflow-hidden">
-                            <Avatar className="h-12 w-12 rounded-full overflow-hidden">
+                        <div className="h-12 w-12 relative rounded-full">
+                            <Avatar className="h-12 w-12 rounded-full relative">
                                 {chatData?.image ? (
                                     <AvatarImage
                                         src={chatData.image}
@@ -327,14 +331,19 @@ const ChatHeader = () => {
                                 ) : (
                                     <>
                                         {chatType === 'contact' ? (
-                                            <div
-                                                className={`uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full 
+                                            <>
+                                                <div
+                                                    className={`uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full 
                                                             ${getColor(chatData.color)}`}
-                                            >
-                                                {chatData?.firstName
-                                                    ? chatData.firstName.split('').shift()
-                                                    : chatData.email.split('').shift()}
-                                            </div>
+                                                >
+                                                    {chatData?.firstName
+                                                        ? chatData.firstName.split('').shift()
+                                                        : chatData.email.split('').shift()}
+                                                </div>
+                                                {isOnline && (
+                                                    <span className="absolute bottom-0 right-0 rounded-full w-3 h-3 bg-[#3FBB46]"></span>
+                                                )}
+                                            </>
                                         ) : (
                                             <div className="bg-[#ffffff22] h-12 w-12 flex rounded-full items-center justify-center">
                                                 #

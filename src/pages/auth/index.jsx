@@ -7,6 +7,7 @@ import { LOGIN_ROUTE, LOGIN_GOOGLE_ROUTE } from '@/utils/constants';
 import { useDispatch } from 'react-redux';
 import { updateUserData } from '@/store/slices/authSlice';
 import { useGoogleLogin } from '@react-oauth/google';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 function isValidEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,6 +19,7 @@ const Login = () => {
     const dispatch = useDispatch();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const validateValue = () => {
         if (!email) {
@@ -39,6 +41,7 @@ const Login = () => {
 
     const handleLogin = async () => {
         if (validateValue()) {
+            setIsLoading(true);
             const res = await apiClient.post(LOGIN_ROUTE, { email, password }, { withCredentials: true });
             if (res?.status == 200 && res?.data?.data) {
                 const infoUser = res?.data.data;
@@ -52,13 +55,13 @@ const Login = () => {
             } else {
                 toast(res?.data?.message);
             }
+            setIsLoading(false);
         }
     };
 
     const handleLoginGoogle = useGoogleLogin({
         onSuccess: (credential) => {
             try {
-                console.log(credential);
                 const googleLogin = async () => {
                     const res = await apiClient.post(LOGIN_GOOGLE_ROUTE, { credential }, { withCredentials: true });
                     if (res?.status == 200 && res?.data?.data) {
@@ -99,7 +102,12 @@ const Login = () => {
                     </p>
                     <div className="mt-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                        <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <Input
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => !isLoading && setEmail(e.target.value)}
+                        />
                     </div>
                     <div className="mt-4 flex flex-col justify-between">
                         <div className="flex justify-between">
@@ -109,7 +117,7 @@ const Login = () => {
                             type="password"
                             placeholder="Password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => !isLoading && setPassword(e.target.value)}
                         />
                         <div className="text-end w-full mt-2">
                             <Link to="/forgot-password" className="text-xs text-gray-500 hover:text-gray-900" variant="link">
@@ -119,10 +127,14 @@ const Login = () => {
                     </div>
                     <div className="mt-8">
                         <button
-                            onClick={handleLogin}
-                            className="bg-blue-700 text-white font-bold py-2 px-4 w-full rounded hover:bg-blue-600"
+                            onClick={!isLoading && handleLogin}
+                            className={`bg-blue-700 text-white font-bold py-2 px-4 w-full flex justify-center items-center rounded hover:bg-blue-600 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            Login
+                            {isLoading ? (
+                                <AiOutlineLoading3Quarters className="text-white text-2xl cursor-pointer animate-spin m-auto" />
+                            ) : (
+                                "Login"
+                            )}
                         </button>
                     </div>
                     <button
