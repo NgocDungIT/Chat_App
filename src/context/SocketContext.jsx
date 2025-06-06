@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addChat, selectUserData, updateOnlineUsers } from '@/store/slices';
+import { addChat, selectUserData, updateOnlineUsers, updateUserData } from '@/store/slices';
 import { HOST } from '@/utils/constants';
 import { store } from '@/store';
 
@@ -55,9 +55,17 @@ const SocketProvider = ({ children }) => {
                 dispatch(updateOnlineUsers(data));
             }
 
+            const handleBlockedUser = (data) => {
+                const user = store.getState().user.user;
+                if(user.id === data._id){
+                    dispatch(updateUserData(data));
+                }
+            }
+
             newSocket.on('recieveMessage', handleRecieveMessage);
             newSocket.on('recieveChannelMessage', handleRecieveChannelMessage);
             newSocket.on('onlineUsers', handleOnlineUsers);
+            newSocket.on('blockedUser', handleBlockedUser);
 
 
             return () => {

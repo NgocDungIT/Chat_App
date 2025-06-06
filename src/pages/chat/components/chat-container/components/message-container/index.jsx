@@ -307,7 +307,7 @@ const ChannelMessage = ({ message }) => {
                                 <AvatarImage
                                     src={message.sender.image}
                                     alt="avatar"
-                                    className="object-cover w-full h-full bg-transparent"
+                                    className="object-cover w-full h-full bg-transparent rounded-full"
                                 />
                             ) : (
                                 <AvatarFallback

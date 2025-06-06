@@ -39,7 +39,7 @@ const MessageBar = () => {
                     fileUrl: undefined,
                     callTime: undefined,
                 };
-                socket.emit('sendMessage', { message: messageData, contact: chatData });
+                socket.emit('sendMessage', { message: messageData, contact: user });
             } else if (chatType === 'channel') {
                 const messageData = {
                     sender: user.id,
@@ -88,7 +88,7 @@ const MessageBar = () => {
                             fileUrl: res.data.data.filePath,
                             callTime: undefined,
                         };
-                        socket.emit('sendMessage', { message: messageData, contact: chatData });
+                        socket.emit('sendMessage', { message: messageData, contact: user });
                     } else if (chatType === 'channel') {
                         const messageData = {
                             sender: user.id,

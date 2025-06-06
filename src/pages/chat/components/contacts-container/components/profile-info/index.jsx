@@ -36,7 +36,7 @@ const ProfileInfo = () => {
                             <AvatarImage
                                 src={user.image}
                                 alt="avatar"
-                                className="object-cover w-full h-full bg-transparent"
+                                className="object-cover w-full h-full bg-transparent rounded-full"
                             />
                         ) : (
                             <div

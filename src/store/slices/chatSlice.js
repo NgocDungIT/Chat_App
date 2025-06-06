@@ -30,9 +30,9 @@ export const chatSlice = createSlice({
             state.chatMessage = action.payload;
         },
         addDirectMessagesContacts(state, action) {
-            if (action.payload?._id && action.payload?.idUser) {
+            if (action.payload?._id) {
                 const index = state.directMessagesContacts.findIndex((item) => item._id === action.payload?._id);
-                if (index === -1 && action.payload?._id !== action.payload?.idUser) {
+                if (index === -1) {
                     state.directMessagesContacts.unshift(action.payload);
                 }
             }

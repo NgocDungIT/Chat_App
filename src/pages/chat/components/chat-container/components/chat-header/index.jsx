@@ -326,7 +326,7 @@ const ChatHeader = () => {
                                     <AvatarImage
                                         src={chatData.image}
                                         alt="avatar"
-                                        className="object-cover w-full h-full bg-transparent"
+                                        className="object-cover w-full h-full bg-transparent rounded-full"
                                     />
                                 ) : (
                                     <>
@@ -402,7 +402,7 @@ const ChatHeader = () => {
                                                     <AvatarImage
                                                         src={chatData.image}
                                                         alt="avatar"
-                                                        className="object-cover w-full h-full bg-transparent"
+                                                        className="object-cover w-full h-full bg-transparent rounded-full"
                                                     />
                                                 </Avatar>
                                             ) : (
@@ -505,7 +505,7 @@ const ChatHeader = () => {
                                                                     <AvatarImage
                                                                         src={member.image}
                                                                         alt="avatar"
-                                                                        className="object-cover w-full h-full bg-transparent"
+                                                                        className="object-cover w-full h-full bg-transparent rounded-full"
                                                                     />
                                                                 ) : (
                                                                     <div

@@ -58,12 +58,9 @@ const ContactsContainer = () => {
     useEffect(() => {
         if (!socket) return;
 
-        const handleAddDirectContact = (contact) => {
+        const handleAddDirectContact = (data) => {
             dispatch(
-                addDirectMessagesContacts({
-                    ...contact,
-                    idUser: user.id,
-                })
+                addDirectMessagesContacts(data.sender)
             );
         };
 

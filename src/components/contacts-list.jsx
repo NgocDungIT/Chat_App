@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     selectChatData,
     selectOnlineUsers,
+    selectUserData,
     setDataChatBotSelected,
     updateChatData,
     updateChatMessage,
@@ -9,11 +10,16 @@ import {
 } from '@/store/slices';
 import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
 import { getColor } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { CiMenuKebab } from 'react-icons/ci';
+import { useSocket } from '@/context/SocketContext';
 
 const ContactsList = ({ isChannel = false, contacts }) => {
+    const socket = useSocket();
     const dispatch = useDispatch();
     const chatData = useSelector(selectChatData);
     const onlineUsers = useSelector(selectOnlineUsers);
+    const user = useSelector(selectUserData);
 
     const handleClick = (contact) => {
         dispatch(setDataChatBotSelected(null));
@@ -27,6 +33,13 @@ const ContactsList = ({ isChannel = false, contacts }) => {
         }
     };
 
+    const handleBlockUser = (id) => {
+        socket.emit('blockUser', {
+            idBlock: id,
+            userId: user.id,
+        });
+    };
+
     return (
         <>
             {contacts.length > 0 && (
@@ -36,7 +49,7 @@ const ContactsList = ({ isChannel = false, contacts }) => {
                         return (
                             <div
                                 key={contact._id}
-                                className={`pl-10 py-2 transition-all duration-300 cursor-pointer
+                                className={`pl-10 py-2 transition-all duration-300 cursor-pointer flex items-center justify-between
                                         ${
                                             chatData && chatData._id === contact._id
                                                 ? 'bg-[#357fac] hover:bg-[#357fac]'
@@ -51,7 +64,7 @@ const ContactsList = ({ isChannel = false, contacts }) => {
                                                 <AvatarImage
                                                     src={contact.image}
                                                     alt="avatar"
-                                                    className="object-cover w-full h-full bg-transparent"
+                                                    className="object-cover w-full h-full bg-transparent rounded-full rounded-full"
                                                 />
                                             ) : (
                                                 <div
@@ -83,6 +96,23 @@ const ContactsList = ({ isChannel = false, contacts }) => {
                                     )}
                                     {!isChannel && <span>{`${contact.firstName} ${contact.lastName}`}</span>}
                                 </div>
+                                {/* {!isChannel && (
+                                    <div className="mr-4">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger>
+                                                <CiMenuKebab className="text-neutral-400 font-light text-opacity-90 text-start hover:text-neutral-100 cursor-pointer transition-all duration-300" />
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="bg-[#585858] border-none mb-2 p-3 text-white">
+                                                <DropdownMenuItem
+                                                    onClick={() => handleBlockUser(contact._id)}
+                                                    className="text-red-400"
+                                                >
+                                                    Block
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                )} */}
                             </div>
                         );
                     })}

@@ -208,7 +208,7 @@ function VideoCall() {
                                         <AvatarImage
                                             src={infoCallData.image}
                                             alt="avatar"
-                                            className="object-cover w-full h-full bg-transparent"
+                                            className="object-cover w-full h-full bg-transparent rounded-full"
                                         />
                                     ) : (
                                         <span className="text-white text-5xl">
@@ -224,7 +224,7 @@ function VideoCall() {
                                         <AvatarImage
                                             src={chatData.image}
                                             alt="avatar"
-                                            className="object-cover w-full h-full bg-transparent"
+                                            className="object-cover w-full h-full bg-transparent rounded-full"
                                         />
                                     ) : (
                                         <span className="text-white text-5xl">
@@ -284,7 +284,7 @@ function VideoCall() {
                                         <AvatarImage
                                             src={infoCallData.image}
                                             alt="avatar"
-                                            className="object-cover w-full h-full bg-transparent"
+                                            className="object-cover w-full h-full bg-transparent rounded-full"
                                         />
                                     ) : (
                                         <span className="text-white text-5xl">

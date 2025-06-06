@@ -29,8 +29,8 @@ const CreateChannel = () => {
                 return;
             }
 
-            if (selectedContacts.length <= 0) {
-                toast('Vui lòng chọn các thành viên.');
+            if (selectedContacts.length <= 2) {
+                toast('Vui lòng chọn ít nhất 2 thành viên.');
                 return;
             }
             setIsFeatching(true);
